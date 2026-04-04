@@ -8,7 +8,7 @@ src/main/resources/static/docs/
 *.iml
 *.iws
 *.ipr
-out/
+/out/
 .DS_Store
 .vscode/
 bin/
