@@ -1,5 +1,8 @@
-.gradle/
+.gradle
 build/
+api-spec/
+src/main/resources/static/docs/
+
 !gradle/wrapper/gradle-wrapper.jar
 .idea/
 *.iml

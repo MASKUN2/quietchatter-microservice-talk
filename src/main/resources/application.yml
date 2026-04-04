@@ -1,15 +1,36 @@
 server:
-  port: 8083
+  port: 8080
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   application:
     name: microservice-talk
   config:
     import: "optional:consul:"
   cloud:
     consul:
-      host: localhost
+      host: ${CONSUL_HOST:localhost}
       port: 8500
       discovery:
         service-name: microservice-talk
         instance-id: ${spring.application.name}:${server.port}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/microservice-talk
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

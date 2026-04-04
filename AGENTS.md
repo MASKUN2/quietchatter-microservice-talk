@@ -49,10 +49,11 @@ com.quietchatter.talk/
 
 * 레거시 Java 코드를 idiomatic Kotlin 코드로 변환하십시오.
 * Data class를 적극 활용하십시오. Lombok은 사용하지 않습니다.
-* 레거시의 `talk/`, `reaction/` 패키지 전체를 참고하여 포팅하십시오.
+* 레거시의 `talk/`, `reaction/` 패키지 전체를 참고하여 포팅하십시오. 특히 `ReactionBatchWorker`와 같은 성능 최적화 로직이나 `TalkAutoHiddenProcessor`와 같은 자동화 로직을 마이크로서비스 환경에 맞게 이식해야 합니다.
 * 새로운 코드를 작성하거나 수정할 때마다 반드시 단위 테스트(Unit Test)를 함께 작성하고 통과를 확인하십시오.
+* 테스트 작성 시 Kotlin 환경에 최적화된 업계 표준 라이브러리인 `mockito-kotlin` 등을 우선적으로 사용하십시오.
 
-### B. 사용자 인증 처리
+### B. 회원 인증 처리
 
 * 인증이 필요한 API는 `X-Member-Id` 헤더를 파라미터로 받아 사용하십시오.
 * 인증 선택적 API(예: 북톡 목록 조회)는 `X-Member-Id` 헤더가 없어도 동작해야 합니다.

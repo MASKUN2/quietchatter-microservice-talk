@@ -9,7 +9,7 @@
 * 프레임워크: Spring Boot 3.5.13
 * 서비스 탐색: HashiCorp Consul (spring-cloud-starter-consul-discovery)
 * 설정 관리: HashiCorp Consul (spring-cloud-starter-consul-config)
-* 특징: 사용자 식별이 필요한 경우, API Gateway에서 삽입한 X-Member-Id HTTP 헤더 정보를 전적으로 신뢰하여 사용합니다. 내부에서 별도의 JWT 검증을 수행하지 마십시오.
+* 특징: 회원 식별이 필요한 경우, API Gateway에서 삽입한 `X-Member-Id` HTTP 헤더 정보를 전적으로 신뢰하여 사용합니다. 내부에서 별도의 JWT 검증을 수행하지 마십시오.
 
 ## AI 에이전트 작업 지침
 

@@ -1,0 +1,127 @@
+package com.quietchatter.talk.application
+
+import com.quietchatter.talk.application.`in`.*
+import com.quietchatter.talk.application.out.ReactionLoadable
+import com.quietchatter.talk.application.out.TalkLoadable
+import com.quietchatter.talk.application.out.TalkPersistable
+import com.quietchatter.talk.domain.ReactionType
+import com.quietchatter.talk.domain.Talk
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
+
+@Service
+@Transactional(readOnly = true)
+class TalkService(
+    private val talkPersistable: TalkPersistable,
+    private val talkLoadable: TalkLoadable,
+    private val reactionLoadable: ReactionLoadable
+) : TalkCommandable, TalkQueryable {
+
+    @Transactional
+    override fun createTalk(command: CreateTalkCommand): UUID {
+        val talk = Talk(
+            bookId = command.bookId,
+            memberId = command.memberId,
+            nickname = command.nickname,
+            content = command.content,
+            dateToHidden = command.dateToHidden
+        )
+        return talkPersistable.save(talk).id!!
+    }
+
+    @Transactional
+    override fun updateTalk(command: UpdateTalkCommand) {
+        val talk = talkLoadable.findById(command.talkId) ?: throw IllegalArgumentException("Talk not found")
+        require(talk.memberId == command.memberId) { "Only the author can update the talk" }
+        talk.updateContent(command.content)
+        talkPersistable.save(talk)
+    }
+
+    @Transactional
+    override fun deleteTalk(command: DeleteTalkCommand) {
+        val talk = talkLoadable.findById(command.talkId) ?: throw IllegalArgumentException("Talk not found")
+        require(talk.memberId == command.memberId) { "Only the author can delete the talk" }
+        talk.hide()
+        talkPersistable.save(talk)
+    }
+
+    @Transactional
+    override fun hideAllByMember(memberId: UUID) {
+        talkPersistable.hideAllByMemberId(memberId)
+    }
+
+    @Transactional
+    override fun hideExpiredTalks(): Int {
+        return talkPersistable.hideExpiredTalks(java.time.LocalDate.now())
+    }
+
+    override fun getTalksByBook(bookId: UUID, memberId: UUID?, pageable: Pageable): Page<TalkDetail> {
+        val talks = talkLoadable.findByBookId(bookId, pageable)
+        return talks.map { talk ->
+            val reactedTypes = memberId?.let { 
+                reactionLoadable.findMemberReactedTypes(talk.id!!, it)
+            } ?: emptySet()
+
+            TalkDetail(
+                id = talk.id!!,
+                bookId = talk.bookId,
+                memberId = talk.memberId,
+                nickname = talk.nickname,
+                content = talk.content,
+                likeCount = talk.likeCount,
+                supportCount = talk.supportCount,
+                didILike = reactedTypes.contains(ReactionType.LIKE),
+                didISupport = reactedTypes.contains(ReactionType.SUPPORT),
+                createdAt = talk.createdAt!!,
+                isModified = talk.isModified()
+            )
+        }
+    }
+
+    override fun getRecommendedTalks(size: Int, memberId: UUID?): List<TalkDetail> {
+        val talks = talkLoadable.findRecommended(size)
+        return talks.map { talk ->
+            val reactedTypes = memberId?.let { 
+                reactionLoadable.findMemberReactedTypes(talk.id!!, it)
+            } ?: emptySet()
+
+            TalkDetail(
+                id = talk.id!!,
+                bookId = talk.bookId,
+                memberId = talk.memberId,
+                nickname = talk.nickname,
+                content = talk.content,
+                likeCount = talk.likeCount,
+                supportCount = talk.supportCount,
+                didILike = reactedTypes.contains(ReactionType.LIKE),
+                didISupport = reactedTypes.contains(ReactionType.SUPPORT),
+                createdAt = talk.createdAt!!,
+                isModified = talk.isModified()
+            )
+        }
+    }
+
+    override fun getTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail> {
+        val talks = talkLoadable.findByMemberId(memberId, pageable)
+        return talks.map { talk ->
+            val reactedTypes = reactionLoadable.findMemberReactedTypes(talk.id!!, memberId)
+
+            TalkDetail(
+                id = talk.id!!,
+                bookId = talk.bookId,
+                memberId = talk.memberId,
+                nickname = talk.nickname,
+                content = talk.content,
+                likeCount = talk.likeCount,
+                supportCount = talk.supportCount,
+                didILike = reactedTypes.contains(ReactionType.LIKE),
+                didISupport = reactedTypes.contains(ReactionType.SUPPORT),
+                createdAt = talk.createdAt!!,
+                isModified = talk.isModified()
+            )
+        }
+    }
+}
