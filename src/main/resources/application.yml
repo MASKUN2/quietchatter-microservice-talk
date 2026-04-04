@@ -10,6 +10,27 @@ spring:
   config:
     import: "optional:consul:"
   cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:19092}
+        bindings:
+          talkEvents-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: talk.dlq
+      bindings:
+        talkEvents-out-0:
+          destination: talk
+          content-type: application/json
+        talkEvents-in-0:
+          destination: talk
+          group: ${spring.application.name}-group
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
     consul:
       host: ${CONSUL_HOST:localhost}
       port: 8500
