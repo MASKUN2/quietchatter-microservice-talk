@@ -1,20 +1,25 @@
 package com.quietchatter.talk.adaptor.`in`.web
 
-import com.quietchatter.talk.application.`in`.TalkCommandable
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
+import com.quietchatter.talk.application.out.ReactionLoadable
+import com.quietchatter.talk.domain.ReactionType
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
+import java.time.LocalDateTime
 
 @RestController
-@RequestMapping("/internal/v1/talks")
+@RequestMapping("/v1/talks/internal")
 class InternalTalkController(
-    private val talkCommandable: TalkCommandable
+    private val reactionLoadable: ReactionLoadable
 ) {
 
-    @DeleteMapping("/by-member/{memberId}")
-    fun hideAllByMember(@PathVariable memberId: UUID) {
-        talkCommandable.hideAllByMember(memberId)
+    @GetMapping("/reactions/stats")
+    fun getReactionStats(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) start: LocalDateTime,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) end: LocalDateTime
+    ): Map<ReactionType, Long> {
+        return reactionLoadable.countByCreatedAtBetweenGroupByType(start, end)
     }
 }

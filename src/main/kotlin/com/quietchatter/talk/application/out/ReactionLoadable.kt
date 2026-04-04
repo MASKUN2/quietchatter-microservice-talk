@@ -2,6 +2,7 @@ package com.quietchatter.talk.application.`out`
 
 import com.quietchatter.talk.domain.Reaction
 import com.quietchatter.talk.domain.ReactionType
+import java.time.LocalDateTime
 import java.util.UUID
 
 interface ReactionLoadable {
@@ -9,4 +10,5 @@ interface ReactionLoadable {
     fun existsByTalkIdAndMemberId(talkId: UUID, memberId: UUID): Boolean
     fun findMemberReactedTalkIds(talkIds: List<UUID>, memberId: UUID): Set<UUID>
     fun findMemberReactedTypes(talkId: UUID, memberId: UUID): Set<ReactionType>
+    fun countByCreatedAtBetweenGroupByType(start: LocalDateTime, end: LocalDateTime): Map<ReactionType, Long>
 }

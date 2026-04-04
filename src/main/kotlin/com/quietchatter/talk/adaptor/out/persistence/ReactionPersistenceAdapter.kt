@@ -1,10 +1,11 @@
 package com.quietchatter.talk.adaptor.out.persistence
 
-import com.quietchatter.talk.application.out.ReactionLoadable
-import com.quietchatter.talk.application.out.ReactionPersistable
+import com.quietchatter.talk.application.`out`.ReactionLoadable
+import com.quietchatter.talk.application.`out`.ReactionPersistable
 import com.quietchatter.talk.domain.Reaction
 import com.quietchatter.talk.domain.ReactionType
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
@@ -35,5 +36,13 @@ class ReactionPersistenceAdapter(
 
     override fun findMemberReactedTypes(talkId: UUID, memberId: UUID): Set<ReactionType> {
         return reactionJpaRepository.findTypesByTalkIdAndMemberId(talkId, memberId).toSet()
+    }
+
+    override fun countByCreatedAtBetweenGroupByType(start: LocalDateTime, end: LocalDateTime): Map<ReactionType, Long> {
+        return reactionJpaRepository.countByCreatedAtBetweenGroupByType(start, end).associate {
+            val type = it["type"] as ReactionType
+            val count = it["count"] as Long
+            type to count
+        }
     }
 }
