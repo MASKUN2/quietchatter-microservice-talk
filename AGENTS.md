@@ -6,7 +6,7 @@
 
 * 역할: 북톡(BookTalk) CRUD 및 Reaction(좋아요/반응) 관리
 * 담당 레거시 패키지: `talk`, `reaction`
-* 포트: 8083
+* 포트: 8080
 
 ## 2. 기술 스택
 

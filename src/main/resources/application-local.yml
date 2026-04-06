@@ -1,0 +1,28 @@
+server:
+  port: 8082
+
+spring:
+  config:
+    import: "optional:consul:"
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9093
+  jpa:
+    hibernate:
+      ddl-auto: update
+  docker:
+    compose:
+      enabled: true
+      file: compose.yaml
+  datasource:
+    url: jdbc:postgresql://localhost:5433/microservice-talk
+    username: postgres
+    password: postgres

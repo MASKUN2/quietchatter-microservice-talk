@@ -25,6 +25,7 @@ repositories {
 extra["springCloudVersion"] = "2025.0.2"
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     implementation(platform("org.springframework.boot:spring-boot-dependencies:3.5.13"))
     implementation(platform("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}"))
 
