@@ -4,6 +4,8 @@ import com.quietchatter.talk.application.`in`.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -61,6 +63,24 @@ class TalkController(
         )
     }
 
+    @GetMapping
+    fun getTalks(
+        @RequestHeader("X-Member-Id", required = false) headerMemberId: UUID?,
+        @RequestParam(required = false) memberId: UUID?,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): ResponseEntity<Page<TalkResponse>> {
+        if (memberId == null) {
+            return ResponseEntity.badRequest().build()
+        }
+
+        if (headerMemberId != memberId) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        }
+
+        val talks = talkQueryable.getTalksByMember(memberId, pageable).map { it.toResponse() }
+        return ResponseEntity.ok(talks)
+    }
+
     @GetMapping("/book/{bookId}")
     fun getTalksByBook(
         @RequestHeader("X-Member-Id", required = false) memberId: UUID?,
@@ -76,14 +96,6 @@ class TalkController(
         @RequestParam(defaultValue = "5") size: Int
     ): List<TalkResponse> {
         return talkQueryable.getRecommendedTalks(size, memberId).map { it.toResponse() }
-    }
-
-    @GetMapping("/me")
-    fun getMyTalks(
-        @RequestHeader("X-Member-Id") memberId: UUID,
-        @PageableDefault(size = 20) pageable: Pageable
-    ): Page<TalkResponse> {
-        return talkQueryable.getTalksByMember(memberId, pageable).map { it.toResponse() }
     }
 }
 
