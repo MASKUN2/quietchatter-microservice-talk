@@ -162,7 +162,16 @@
 
 응답: 204 No Content
 
-## 5. 비즈니스 규칙
+## 5. 이벤트 구독 (Event Consumption)
+
+### MemberDeactivatedEvent
+`microservice-member`에서 회원 탈퇴 시 발생하는 이벤트를 구독하여 해당 회원의 모든 북톡을 숨김 처리합니다.
+
+- 토픽: `member`
+- 조건: `eventType` 헤더가 `MemberDeactivatedEvent`일 때
+- 처리: `talk.isHidden` 필드를 `true`로 업데이트
+
+## 6. 비즈니스 규칙
 
 ### 북톡 작성 제한
 

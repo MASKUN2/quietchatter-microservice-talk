@@ -15,7 +15,7 @@ spring:
     stream:
       function:
         autodetect: false
-        definition: ""
+        definition: "memberEvents"
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:localhost:19092}
@@ -24,12 +24,24 @@ spring:
             consumer:
               enableDlq: true
               dlqName: talk.dlq
+          memberEvents-in-0:
+            consumer:
+              enableDlq: true
+              dlqName: member.dlq
       bindings:
         talkEvents-out-0:
           destination: talk
           content-type: application/json
         talkEvents-in-0:
           destination: talk
+          group: ${spring.application.name}-group
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-max-interval: 10000
+            back-off-multiplier: 2.0
+        memberEvents-in-0:
+          destination: member
           group: ${spring.application.name}-group
           consumer:
             max-attempts: 3
