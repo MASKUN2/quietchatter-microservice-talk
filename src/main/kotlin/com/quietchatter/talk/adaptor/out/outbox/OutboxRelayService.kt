@@ -1,5 +1,6 @@
 package com.quietchatter.talk.adaptor.out.outbox
 
+import com.quietchatter.talk.adaptor.out.messaging.avro.TalkEventAvro
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.data.domain.PageRequest
@@ -21,9 +22,16 @@ class OutboxRelayService(
     fun relayEvents() {
         val events = outboxEventRepository.findByProcessedAtIsNullOrderByCreatedAtAsc(PageRequest.of(0, 100))
         for (event in events) {
-            val message = MessageBuilder.withPayload(event.payload)
+            val avroEvent = TalkEventAvro.newBuilder()
+                .setEventId(event.id.toString())
+                .setAggregateId(event.aggregateId)
+                .setType(event.type)
+                .setPayload(event.payload)
+                .setOccurredAt(event.createdAt.toString())
+                .build()
+
+            val message = MessageBuilder.withPayload(avroEvent)
                 .setHeader(KafkaHeaders.KEY, event.aggregateId.toByteArray())
-                .setHeader("eventType", event.type)
                 .build()
 
             val success = streamBridge.send("talkEvents-out-0", message)

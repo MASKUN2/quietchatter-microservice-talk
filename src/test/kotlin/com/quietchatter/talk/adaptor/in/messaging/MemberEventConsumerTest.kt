@@ -1,6 +1,7 @@
 package com.quietchatter.talk.adaptor.`in`.messaging
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.quietchatter.member.adaptor.out.messaging.avro.MemberEventAvro
 import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -20,9 +21,14 @@ class MemberEventConsumerTest {
         // Given
         val memberId = UUID.randomUUID()
         val payload = """{"memberId": "$memberId"}"""
-        val message = MessageBuilder.withPayload(payload)
-            .setHeader("eventType", "MemberDeactivatedEvent")
+        val avroEvent = MemberEventAvro.newBuilder()
+            .setEventId(UUID.randomUUID().toString())
+            .setAggregateId(memberId.toString())
+            .setType("MemberDeactivatedEvent")
+            .setPayload(payload)
+            .setOccurredAt("now")
             .build()
+        val message = MessageBuilder.withPayload(avroEvent).build()
 
         // When
         memberEventConsumer.memberEvents().accept(message)
@@ -34,10 +40,16 @@ class MemberEventConsumerTest {
     @Test
     fun `should ignore other event types`() {
         // Given
-        val payload = """{"memberId": "${UUID.randomUUID()}"}"""
-        val message = MessageBuilder.withPayload(payload)
-            .setHeader("eventType", "OtherEvent")
+        val memberId = UUID.randomUUID()
+        val payload = """{"memberId": "$memberId"}"""
+        val avroEvent = MemberEventAvro.newBuilder()
+            .setEventId(UUID.randomUUID().toString())
+            .setAggregateId(memberId.toString())
+            .setType("OtherEvent")
+            .setPayload(payload)
+            .setOccurredAt("now")
             .build()
+        val message = MessageBuilder.withPayload(avroEvent).build()
 
         // When
         memberEventConsumer.memberEvents().accept(message)

@@ -70,7 +70,15 @@ com.quietchatter.talk/
 * 북톡 목록 응답에 책 정보(제목, 썸네일)가 필요하면 microservice-book의 내부 API를 호출하십시오.
 * 통신 방식: Spring RestClient + Consul LoadBalancer
 
-### E. 문서 규칙
+### E. 메시징 및 이벤트 처리 규칙
+
+* 모든 외부 이벤트 발행은 트랜잭셔널 아웃박스(Transactional Outbox) 패턴을 따릅니다.
+* 이벤트 직렬화 포맷은 Apache Avro를 사용하며, Redpanda Schema Registry와 연동됩니다.
+* 스키마 정의는 `src/main/avro/` 경로에 `.avsc` 파일로 관리합니다.
+* 스키마 변경 시 `./gradlew generateAvroJava` 명령을 실행하여 최신 도메인 객체를 생성해야 합니다.
+* 발행되는 메시지의 페이로드는 자동 생성된 Avro 클래스 인스턴스를 사용하십시오.
+
+### F. 문서 규칙
 
 * 마크다운 작성 시 굵게(bold)나 기울임(italics) 같은 강조 서식을 사용하지 않습니다.
 * 마크다운 작성 시 이모티콘을 사용하지 않습니다.
