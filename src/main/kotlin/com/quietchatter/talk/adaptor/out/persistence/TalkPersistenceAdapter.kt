@@ -31,6 +31,10 @@ class TalkPersistenceAdapter(
         return talkJpaRepository.hideExpiredTalks(now)
     }
 
+    override fun findExpiredTalks(now: LocalDate): List<Talk> {
+        return talkJpaRepository.findExpiredTalks(now)
+    }
+
     override fun findById(id: UUID): Talk? {
         return talkJpaRepository.findById(id).orElse(null)
     }

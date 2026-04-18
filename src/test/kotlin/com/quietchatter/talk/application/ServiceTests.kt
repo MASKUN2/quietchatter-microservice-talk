@@ -19,7 +19,8 @@ class TalkServiceTest {
     private val talkPersistable: TalkPersistable = mock()
     private val talkLoadable: TalkLoadable = mock()
     private val reactionLoadable: ReactionLoadable = mock()
-    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable)
+    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository = mock()
+    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventRepository)
 
     @Test
     @DisplayName("새로운 북톡을 성공적으로 생성해야 한다")

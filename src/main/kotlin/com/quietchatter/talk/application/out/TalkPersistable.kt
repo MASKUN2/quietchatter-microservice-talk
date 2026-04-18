@@ -9,4 +9,5 @@ interface TalkPersistable {
     fun delete(talk: Talk)
     fun hideAllByMemberId(memberId: UUID)
     fun hideExpiredTalks(now: LocalDate): Int
+    fun findExpiredTalks(now: LocalDate): List<Talk>
 }

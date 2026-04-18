@@ -17,7 +17,8 @@ import java.util.UUID
 class TalkService(
     private val talkPersistable: TalkPersistable,
     private val talkLoadable: TalkLoadable,
-    private val reactionLoadable: ReactionLoadable
+    private val reactionLoadable: ReactionLoadable,
+    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository
 ) : TalkCommandable, TalkQueryable {
 
     @Transactional
@@ -55,7 +56,23 @@ class TalkService(
 
     @Transactional
     override fun hideExpiredTalks(): Int {
-        return talkPersistable.hideExpiredTalks(java.time.LocalDate.now())
+        val now = java.time.LocalDate.now()
+        val expiredTalks = talkPersistable.findExpiredTalks(now)
+        
+        expiredTalks.forEach { talk ->
+            talk.hide()
+            talkPersistable.save(talk)
+            
+            val outboxEvent = com.quietchatter.talk.adaptor.out.outbox.OutboxEvent(
+                aggregateType = "Talk",
+                aggregateId = talk.id.toString(),
+                type = "TalkHiddenEvent",
+                payload = "{\"talkId\": \"${talk.id}\", \"reason\": \"AUTO_HIDDEN\"}"
+            )
+            outboxEventRepository.save(outboxEvent)
+        }
+        
+        return expiredTalks.size
     }
 
     override fun getTalksByBook(bookId: UUID, memberId: UUID?, pageable: Pageable): Page<TalkDetail> {
