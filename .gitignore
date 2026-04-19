@@ -12,3 +12,4 @@ src/main/resources/static/docs/
 .DS_Store
 .vscode/
 bin/
+.worktrees/
