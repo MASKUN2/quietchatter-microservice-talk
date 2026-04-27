@@ -17,8 +17,6 @@ spring:
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:localhost:19092}
-          configuration:
-            schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
         bindings:
           talkEvents-in-0:
             consumer:
@@ -31,11 +29,11 @@ spring:
       bindings:
         talkEvents-out-0:
           destination: talk
-          content-type: application/*+avro
+          content-type: application/json
         talkEvents-in-0:
           destination: talk
           group: ${spring.application.name}-group
-          content-type: application/*+avro
+          content-type: application/json
           consumer:
             max-attempts: 3
             back-off-initial-interval: 1000
@@ -44,7 +42,7 @@ spring:
         memberEvents-in-0:
           destination: member
           group: ${spring.application.name}-group
-          content-type: application/*+avro
+          content-type: application/json
           consumer:
             max-attempts: 3
             back-off-initial-interval: 1000

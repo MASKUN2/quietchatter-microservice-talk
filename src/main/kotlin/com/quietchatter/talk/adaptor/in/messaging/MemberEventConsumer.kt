@@ -1,7 +1,5 @@
 package com.quietchatter.talk.adaptor.`in`.messaging
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.quietchatter.member.adaptor.out.messaging.avro.MemberEventAvro
 import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
@@ -12,22 +10,20 @@ import java.util.function.Consumer
 
 @Configuration
 class MemberEventConsumer(
-    private val talkCommandable: TalkCommandable,
-    private val objectMapper: ObjectMapper
+    private val talkCommandable: TalkCommandable
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Bean
-    fun memberEvents(): Consumer<Message<MemberEventAvro>> {
+    fun memberEvents(): Consumer<Message<MemberEventDto>> {
         return Consumer { message ->
-            val avroEvent = message.payload
-            val eventType = avroEvent.getType().toString()
+            val eventDto = message.payload
+            val eventType = eventDto.evtType
             log.debug("Received member event: {}", eventType)
 
             if (eventType == "MemberDeactivatedEvent") {
                 try {
-                    val payload = objectMapper.readTree(avroEvent.getPayload().toString())
-                    val memberIdStr = payload.get("memberId")?.asText()
+                    val memberIdStr = eventDto.memberId
                     
                     if (memberIdStr != null) {
                         val memberId = UUID.fromString(memberIdStr)
