@@ -2,15 +2,7 @@ server:
   port: 8082
 
 spring:
-  config:
-    import: "optional:consul:"
   cloud:
-    consul:
-      enabled: false
-      discovery:
-        enabled: false
-      config:
-        enabled: false
     stream:
       kafka:
         binder:

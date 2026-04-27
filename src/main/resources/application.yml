@@ -7,8 +7,6 @@ spring:
       enabled: true
   application:
     name: microservice-talk
-  config:
-    import: "optional:consul:"
   cloud:
     function:
       autodetect: false
@@ -52,12 +50,6 @@ spring:
             back-off-initial-interval: 1000
             back-off-max-interval: 10000
             back-off-multiplier: 2.0
-    consul:
-      host: ${CONSUL_HOST:localhost}
-      port: 8500
-      discovery:
-        service-name: microservice-talk
-        instance-id: ${spring.application.name}:${server.port}
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/rdb-microservice-talk}
