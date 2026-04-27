@@ -74,8 +74,9 @@ com.quietchatter.talk/
 ### E. 메시징 및 이벤트 처리 규칙
 
 - 모든 외부 이벤트 발행은 트랜잭셔널 아웃박스(Transactional Outbox) 패턴을 따릅니다.
-- 이벤트 직렬화 포맷은 JSON을 사용합니다.
-- 발행되는 메시지의 페이로드는 TalkIntegrationEvent 클래스를 사용하십시오.
+- 이벤트 직렬화 포맷은 평면화된 JSON(Flattened JSON)을 사용합니다.
+- 메타데이터 필드(ID, 타입, 시간, 애그리거트 ID)에는 `evt_` 접두어를 사용하여 비즈니스 데이터와 구분합니다.
+- 발행되는 메시지의 페이로드는 서비스 내 정의된 Integration Event DTO 인스턴스를 사용하십시오.
 - 타 서비스로부터 수신하는 이벤트는 해당 서비스의 이벤트 구조에 맞춘 DTO(예: MemberEventDto)를 정의하여 사용하십시오.
 
 ### F. 서비스 간 통신
