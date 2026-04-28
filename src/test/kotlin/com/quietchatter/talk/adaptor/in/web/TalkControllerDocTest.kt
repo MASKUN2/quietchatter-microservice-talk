@@ -156,7 +156,7 @@ class TalkControllerDocTest {
         whenever(talkQueryable.getTalksByBook(any(), any(), any())).thenReturn(PageImpl(listOf(talkDetail)))
 
         mockMvc.perform(
-            get("/api/v1/talks/book/{bookId}", bookId)
+            get("/api/talks/book/{bookId}", bookId)
                 .header("X-Member-Id", UUID.randomUUID().toString())
                 .accept(MediaType.APPLICATION_JSON)
         )

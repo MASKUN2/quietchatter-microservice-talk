@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/talks")
+@RequestMapping("/api/talks")
 class TalkController(
     private val talkCommandable: TalkCommandable,
     private val talkQueryable: TalkQueryable
