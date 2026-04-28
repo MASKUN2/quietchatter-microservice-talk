@@ -60,7 +60,7 @@ class TalkControllerDocTest {
         whenever(talkQueryable.getTalksByMember(any(), any())).thenReturn(PageImpl(listOf(talkDetail)))
 
         mockMvc.perform(
-            get("/api/v1/talks")
+            get("/api/talks")
                 .param("memberId", memberId.toString())
                 .header("X-Member-Id", memberId.toString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -114,7 +114,7 @@ class TalkControllerDocTest {
         val otherMemberId = UUID.randomUUID()
 
         mockMvc.perform(
-            get("/api/v1/talks")
+            get("/api/talks")
                 .param("memberId", memberId.toString())
                 .header("X-Member-Id", otherMemberId.toString())
                 .accept(MediaType.APPLICATION_JSON)

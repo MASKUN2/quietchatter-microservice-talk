@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
 @RestController
-@RequestMapping("/v1/talks/{talkId}/reactions")
+@RequestMapping("/api/reactions")
 class ReactionController(
     private val reactionModifiable: ReactionModifiable
 ) {
 
-    @PostMapping
+    @PostMapping("/talks/{talkId}")
     fun addReaction(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,
@@ -28,7 +28,7 @@ class ReactionController(
         )
     }
 
-    @DeleteMapping
+    @DeleteMapping("/talks/{talkId}")
     fun removeReaction(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,

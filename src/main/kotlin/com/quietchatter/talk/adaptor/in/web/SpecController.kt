@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets
 @RestController
 class SpecController {
 
-    @GetMapping("/api/v1/spec")
+    @GetMapping("/api/spec")
     fun getSpec(): ResponseEntity<String> {
         return try {
             // JAR 내부 정적 리소스 경로 확인
