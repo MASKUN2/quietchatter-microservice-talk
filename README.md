@@ -63,9 +63,9 @@ Reaction: id(UUID), talkId, memberId, type(ReactionType)
 
 ## 서비스 간 통신
 
-- **동기 (Feign Client)**: Talk 작성 시 microservice-member의 내부 API를 호출하여 작성자 닉네임 스냅샷을 획득 및 저장합니다.
-- **도서 정보**: 도서 상세 조회가 필요한 경우 microservice-book의 /api/books API를 Spring RestClient로 호출합니다.
-- **k8s DNS**: 모든 서비스 호출은 k8s DNS(service.quietchatter.svc.cluster.local)를 사용합니다.
+- 동기 (Feign Client): Talk 작성 시 microservice-member의 내부 API(/internal/api/members/{memberId})를 호출하여 작성자 닉네임 스냅샷을 획득 및 저장. 호출 시 X-Internal-Secret 헤더를 INTERNAL_SECRET env var 값으로 자동 주입(MemberClientConfig RequestInterceptor).
+- 도서 정보: 도서 상세 조회가 필요한 경우 microservice-book의 /api/books API를 Spring RestClient로 호출.
+- k8s DNS: 모든 서비스 호출은 k8s DNS(service.quietchatter.svc.cluster.local)를 사용.
 
 ## 에러 핸들링
 
