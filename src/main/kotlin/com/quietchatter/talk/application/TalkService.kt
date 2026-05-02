@@ -18,15 +18,18 @@ class TalkService(
     private val talkPersistable: TalkPersistable,
     private val talkLoadable: TalkLoadable,
     private val reactionLoadable: ReactionLoadable,
-    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository
+    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository,
+    private val memberClient: com.quietchatter.talk.adaptor.out.external.MemberClient
 ) : TalkCommandable, TalkQueryable {
 
     @Transactional
     override fun createTalk(command: CreateTalkCommand): UUID {
+        val memberInfo = memberClient.getMemberInfo(command.memberId)
+        
         val talk = Talk(
             bookId = command.bookId,
             memberId = command.memberId,
-            nickname = command.nickname,
+            nickname = memberInfo.nickname,
             content = command.content,
             dateToHidden = command.dateToHidden
         )

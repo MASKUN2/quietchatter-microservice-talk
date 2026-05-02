@@ -20,18 +20,24 @@ class TalkServiceTest {
     private val talkLoadable: TalkLoadable = mock()
     private val reactionLoadable: ReactionLoadable = mock()
     private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository = mock()
-    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventRepository)
+    private val memberClient: com.quietchatter.talk.adaptor.out.external.MemberClient = mock()
+    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventRepository, memberClient)
 
     @Test
     @DisplayName("새로운 북톡을 성공적으로 생성해야 한다")
     fun createTalk() {
+        val memberId = UUID.randomUUID()
         val command = CreateTalkCommand(
             bookId = UUID.randomUUID(),
-            memberId = UUID.randomUUID(),
+            memberId = memberId,
             nickname = "tester",
             content = "test content"
         )
         val talkId = UUID.randomUUID()
+        
+        whenever(memberClient.getMemberInfo(eq(memberId), any())).thenReturn(
+            com.quietchatter.talk.adaptor.out.external.InternalMemberResponse(memberId, "tester")
+        )
         
         whenever(talkPersistable.save(any())).thenAnswer { invocation ->
             val talk = invocation.getArgument<Talk>(0)

@@ -21,14 +21,13 @@ class TalkController(
     @PostMapping
     fun createTalk(
         @RequestHeader("X-Member-Id") memberId: UUID,
-        @RequestHeader("X-Member-Nickname", defaultValue = "조용한 독서가") nickname: String,
         @RequestBody request: CreateTalkRequest
     ): UUID {
         return talkCommandable.createTalk(
             CreateTalkCommand(
                 bookId = request.bookId,
                 memberId = memberId,
-                nickname = nickname,
+                nickname = "", // 이제 Service에서 조회하므로 빈 문자열 전달 (또는 Command 구조 변경 가능)
                 content = request.content,
                 dateToHidden = request.dateToHidden
             )

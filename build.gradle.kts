@@ -38,6 +38,7 @@ dependencies {
 
     // Event Driven Architecture
     implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
     runtimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("com.h2database:h2")
