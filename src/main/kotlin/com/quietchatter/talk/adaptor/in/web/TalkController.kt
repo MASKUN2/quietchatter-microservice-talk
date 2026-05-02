@@ -35,7 +35,7 @@ class TalkController(
         )
     }
 
-    @PatchMapping("/{talkId}")
+    @PutMapping("/{talkId}")
     fun updateTalk(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,
