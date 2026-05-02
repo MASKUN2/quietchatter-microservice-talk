@@ -36,7 +36,7 @@ com.quietchatter.talk/
 | GET    | /api/talks/book/{bookId} | Optional | 특정 책의 북톡 목록 |
 | GET    | /api/talks/recommended | Optional | 추천 북톡 목록 (반응 많은 순) |
 | POST   | /api/talks | Required | 북톡 작성 |
-| PATCH  | /api/talks/{talkId} | Required | 북톡 수정 (작성자만) |
+| PUT    | /api/talks/{talkId} | Required | 북톡 수정 (작성자만) |
 | DELETE | /api/talks/{talkId} | Required | 북톡 숨김 처리 (작성자만) |
 
 ### 반응 API (/api/reactions)
@@ -61,10 +61,22 @@ Reaction: id(UUID), talkId, memberId, type(ReactionType)
 - dateToHidden이 설정된 북톡은 해당 날짜 이후 조회에서 자동 제외 (배치 없이 필터링)
 - 수정/삭제는 작성자 본인만 가능 (불일치 시 403)
 
+## 서비스 간 통신
+
+- **동기 (Feign Client)**: Talk 작성 시 microservice-member의 내부 API를 호출하여 작성자 닉네임 스냅샷을 획득 및 저장합니다.
+- **도서 정보**: 도서 상세 조회가 필요한 경우 microservice-book의 /api/books API를 Spring RestClient로 호출합니다.
+- **k8s DNS**: 모든 서비스 호출은 k8s DNS(service.quietchatter.svc.cluster.local)를 사용합니다.
+
+## 에러 핸들링
+
+RFC 7807 (Problem Details for HTTP APIs) 표준을 준수하며, @RestControllerAdvice를 통해 전역 예외 처리를 수행합니다.
+
 ## 이벤트
 
 - 발행: TalkIntegrationEvent (Kafka 토픽: talk)
-- 구독: member 토픽의 MemberDeactivatedEvent → 해당 회원의 모든 북톡 숨김 처리
+- 구독: 
+    - `MemberDeactivatedEvent`: 해당 회원의 모든 북톡 숨김 처리.
+    - `MemberProfileUpdatedEvent`: 해당 회원의 모든 북톡 닉네임 스냅샷 최신화.
 - 전송 패턴: Transactional Outbox
 
 ## 로컬 실행
