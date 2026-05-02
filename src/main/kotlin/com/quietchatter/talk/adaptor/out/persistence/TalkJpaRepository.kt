@@ -26,4 +26,8 @@ interface TalkJpaRepository : JpaRepository<Talk, UUID> {
 
     @Query("SELECT t FROM Talk t WHERE t.dateToHidden <= :now AND t.isHidden = false")
     fun findExpiredTalks(now: LocalDate): List<Talk>
+
+    @Modifying
+    @Query("UPDATE Talk t SET t.nickname = :nickname WHERE t.memberId = :memberId")
+    fun updateNicknameByMemberId(memberId: UUID, nickname: String)
 }

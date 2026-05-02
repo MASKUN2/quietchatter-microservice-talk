@@ -9,6 +9,7 @@ interface TalkCommandable {
     fun deleteTalk(command: DeleteTalkCommand)
     fun hideAllByMember(memberId: UUID)
     fun hideExpiredTalks(): Int
+    fun updateAuthorNickname(memberId: UUID, newNickname: String)
 }
 
 data class CreateTalkCommand(

@@ -78,6 +78,11 @@ class TalkService(
         return expiredTalks.size
     }
 
+    @Transactional
+    override fun updateAuthorNickname(memberId: UUID, newNickname: String) {
+        talkPersistable.updateNicknameByMemberId(memberId, newNickname)
+    }
+
     override fun getTalksByBook(bookId: UUID, memberId: UUID?, pageable: Pageable): Page<TalkDetail> {
         val talks = talkLoadable.findByBookId(bookId, pageable)
         return talks.map { talk ->

@@ -35,6 +35,10 @@ class TalkPersistenceAdapter(
         return talkJpaRepository.findExpiredTalks(now)
     }
 
+    override fun updateNicknameByMemberId(memberId: UUID, nickname: String) {
+        talkJpaRepository.updateNicknameByMemberId(memberId, nickname)
+    }
+
     override fun findById(id: UUID): Talk? {
         return talkJpaRepository.findById(id).orElse(null)
     }

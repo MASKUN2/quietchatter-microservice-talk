@@ -10,4 +10,5 @@ interface TalkPersistable {
     fun hideAllByMemberId(memberId: UUID)
     fun hideExpiredTalks(now: LocalDate): Int
     fun findExpiredTalks(now: LocalDate): List<Talk>
+    fun updateNicknameByMemberId(memberId: UUID, nickname: String)
 }
