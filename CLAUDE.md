@@ -25,7 +25,7 @@
 ### D. 메시징 규칙
 
 - 모든 이벤트 발행은 Transactional Outbox 패턴을 따른다.
-- 이벤트 직렬화: flattened JSON. 메타데이터 필드에는 evt_ 접두어를 사용하십시오.
+- 이벤트 직렬화: flattened JSON. 메타데이터 필드에는 evt_접두어를 사용하십시오.
 - 타 서비스 이벤트 수신 시 독립 DTO(예: MemberEventDto)를 정의하여 결합도를 낮추십시오.
 
 ### E. 서비스 간 통신

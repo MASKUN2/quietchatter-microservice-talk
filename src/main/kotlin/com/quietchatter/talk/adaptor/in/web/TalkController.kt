@@ -19,6 +19,7 @@ class TalkController(
 ) {
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     fun createTalk(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @RequestBody request: CreateTalkRequest
@@ -35,6 +36,7 @@ class TalkController(
     }
 
     @PutMapping("/{talkId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun updateTalk(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,
@@ -50,6 +52,7 @@ class TalkController(
     }
 
     @DeleteMapping("/{talkId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteTalk(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID

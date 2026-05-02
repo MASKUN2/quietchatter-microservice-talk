@@ -3,9 +3,8 @@ package com.quietchatter.talk.adaptor.`in`.web
 import com.epages.restdocs.apispec.ResourceDocumentation.resource
 import com.epages.restdocs.apispec.ResourceSnippetParameters
 import com.epages.restdocs.apispec.Schema
-import com.quietchatter.talk.application.`in`.TalkDetail
-import com.quietchatter.talk.application.`in`.TalkQueryable
-import com.quietchatter.talk.application.`in`.TalkCommandable
+import com.quietchatter.talk.application.`in`.*
+import com.quietchatter.talk.domain.ReactionType
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -16,17 +15,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.MediaType
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
-import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 import java.util.*
 
-@WebMvcTest(TalkController::class)
+@WebMvcTest(TalkController::class, ReactionController::class)
 @AutoConfigureRestDocs
 @Tag("restdocs")
 class TalkControllerDocTest {
@@ -39,6 +37,9 @@ class TalkControllerDocTest {
 
     @MockitoBean
     private lateinit var talkCommandable: TalkCommandable
+
+    @MockitoBean
+    private lateinit var reactionModifiable: ReactionModifiable
 
     @Test
     fun getTalksByMember() {
@@ -197,6 +198,112 @@ class TalkControllerDocTest {
                                 fieldWithPath("empty").description("Is empty")
                             )
                             .responseSchema(Schema.schema("TalkPageResponse"))
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun createTalk() {
+        val talkId = UUID.randomUUID()
+        val request = """
+            {
+                "bookId": "${UUID.randomUUID()}",
+                "content": "new talk content"
+            }
+        """.trimIndent()
+
+        whenever(talkCommandable.createTalk(any())).thenReturn(talkId)
+
+        mockMvc.perform(
+            post("/api/talks")
+                .header("X-Member-Id", UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+        )
+            .andExpect(status().isCreated)
+            .andDo(
+                document(
+                    "create-talk",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Talks")
+                            .description("Create a new talk")
+                            .requestFields(
+                                fieldWithPath("bookId").description("Book ID"),
+                                fieldWithPath("content").description("Talk content")
+                            )
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun updateTalk() {
+        val talkId = UUID.randomUUID()
+        val request = """
+            {
+                "content": "updated talk content"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            put("/api/talks/{talkId}", talkId)
+                .header("X-Member-Id", UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                document(
+                    "update-talk",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Talks")
+                            .description("Update an existing talk")
+                            .pathParameters(
+                                parameterWithName("talkId").description("Talk ID")
+                            )
+                            .requestFields(
+                                fieldWithPath("content").description("Updated talk content")
+                            )
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun addReaction() {
+        val talkId = UUID.randomUUID()
+        val request = """
+            {
+                "type": "LIKE"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            post("/api/reactions/talks/{talkId}", talkId)
+                .header("X-Member-Id", UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                document(
+                    "add-reaction",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Reactions")
+                            .description("Add a reaction to a talk")
+                            .pathParameters(
+                                parameterWithName("talkId").description("Talk ID")
+                            )
+                            .requestFields(
+                                fieldWithPath("type").description("Reaction type (LIKE, SUPPORT)")
+                            )
                             .build()
                     )
                 )

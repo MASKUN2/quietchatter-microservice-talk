@@ -35,7 +35,7 @@ class TalkServiceTest {
         )
         val talkId = UUID.randomUUID()
         
-        whenever(memberClient.getMemberInfo(eq(memberId), any())).thenReturn(
+        whenever(memberClient.getMemberInfo(eq(memberId))).thenReturn(
             com.quietchatter.talk.adaptor.out.external.InternalMemberResponse(memberId, "tester")
         )
         

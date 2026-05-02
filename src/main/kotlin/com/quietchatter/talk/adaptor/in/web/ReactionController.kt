@@ -4,6 +4,7 @@ import com.quietchatter.talk.application.`in`.AddReactionCommand
 import com.quietchatter.talk.application.`in`.ReactionModifiable
 import com.quietchatter.talk.application.`in`.RemoveReactionCommand
 import com.quietchatter.talk.domain.ReactionType
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -14,6 +15,7 @@ class ReactionController(
 ) {
 
     @PostMapping("/talks/{talkId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun addReaction(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,
@@ -29,6 +31,7 @@ class ReactionController(
     }
 
     @DeleteMapping("/talks/{talkId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun removeReaction(
         @RequestHeader("X-Member-Id") memberId: UUID,
         @PathVariable talkId: UUID,

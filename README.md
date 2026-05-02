@@ -32,7 +32,7 @@ com.quietchatter.talk/
 
 | 메서드 | 경로 | 인증 | 설명 |
 |---|---|---|---|
-| GET    | /api/talks | Optional | 전체 북톡 목록 (페이지네이션) |
+| GET    | /api/talks?memberId= | Required | 특정 회원이 작성한 북톡 목록 (X-Member-Id 헤더와 memberId가 일치해야 함) |
 | GET    | /api/talks/book/{bookId} | Optional | 특정 책의 북톡 목록 |
 | GET    | /api/talks/recommended | Optional | 추천 북톡 목록 (반응 많은 순) |
 | POST   | /api/talks | Required | 북톡 작성 |
@@ -43,28 +43,42 @@ com.quietchatter.talk/
 
 | 메서드 | 경로 | 인증 | 설명 |
 |---|---|---|---|
-| POST   | /api/reactions/talks/{talkId} | Required | 반응 추가. 응답: 202 Accepted |
-| DELETE | /api/reactions/talks/{talkId} | Required | 반응 제거. 응답: 202 Accepted |
+| POST   | /api/reactions/talks/{talkId} | Required | 반응 추가 (body에 type 포함) |
+| DELETE | /api/reactions/talks/{talkId} | Required | 반응 제거 (body에 type 포함) |
 
 인증: X-Member-Id 헤더 (Gateway가 주입). Optional은 헤더 없어도 동작.
 
 ## 도메인 모델
 
-Talk: id(UUID), bookId, memberId, content, hidden(Boolean), dateToHidden(LocalDate?)
+Talk: id(UUID), bookId, memberId, content, hidden(Boolean), dateToHidden(LocalDate)
 
 Reaction: id(UUID), talkId, memberId, type(ReactionType)
 
+## 환경변수 및 보안
+
+모든 민감 정보는 k8s Secret(quietchatter-secrets)으로부터 환경 변수로 주입됩니다.
+
+| 변수명 | 용도 | 비고 |
+|---|---|---|
+| SERVER_PORT | 서비스 포트 번호 | k8s: 8084 |
+| DB_URL | PostgreSQL 접속 URL | |
+| DB_USERNAME | PostgreSQL 사용자명 | |
+| DB_PASSWORD | PostgreSQL 비밀번호 | |
+| INTERNAL_SECRET | 서비스 간 통신용 공유 비밀키 | |
+| KAFKA_BROKERS | Kafka 브로커 목록 | |
+| SPRING_DATA_REDIS_HOST | Redis 호스트 주소 | |
+| SPRING_DATA_REDIS_PORT | Redis 포트 번호 | |
+| SPRING_PROFILES_ACTIVE | 활성 프로파일 | prod |
+
 ## 비즈니스 규칙
 
-- 동일 회원이 동일 책에 북톡 하나만 작성 가능 (중복 시 409)
 - 북톡 삭제는 물리 삭제가 아닌 hidden=true 처리
-- dateToHidden이 설정된 북톡은 해당 날짜 이후 조회에서 자동 제외 (배치 없이 필터링)
+- dateToHidden 기본값은 작성/수정 시점으로부터 12개월 후로 설정되며, 해당 날짜 이후 조회에서 자동 제외
 - 수정/삭제는 작성자 본인만 가능 (불일치 시 403)
 
 ## 서비스 간 통신
 
-- 동기 (Feign Client): Talk 작성 시 microservice-member의 내부 API(/internal/api/members/{memberId})를 호출하여 작성자 닉네임 스냅샷을 획득 및 저장. 호출 시 X-Internal-Secret 헤더를 INTERNAL_SECRET env var 값으로 자동 주입(MemberClientConfig RequestInterceptor).
-- 도서 정보: 도서 상세 조회가 필요한 경우 microservice-book의 /api/books API를 Spring RestClient로 호출.
+- 동기 (Feign Client): Talk 작성 시 microservice-member의 내부 API(/internal/api/members/{memberId})를 호출하여 작성자 닉네임 스냅샷을 획득 및 저장. 호출 시 X-Internal-Secret 헤더를 INTERNAL_SECRET env var 값으로 자동 주입.
 - k8s DNS: 모든 서비스 호출은 k8s DNS(service.quietchatter.svc.cluster.local)를 사용.
 
 ## 에러 핸들링
@@ -74,9 +88,9 @@ RFC 7807 (Problem Details for HTTP APIs) 표준을 준수하며, @RestController
 ## 이벤트
 
 - 발행: TalkIntegrationEvent (Kafka 토픽: talk)
-- 구독: 
-    - `MemberDeactivatedEvent`: 해당 회원의 모든 북톡 숨김 처리.
-    - `MemberProfileUpdatedEvent`: 해당 회원의 모든 북톡 닉네임 스냅샷 최신화.
+- 구독:
+    - MemberDeactivatedEvent: 해당 회원의 모든 북톡 숨김 처리.
+    - MemberProfileUpdatedEvent: 해당 회원의 모든 북톡 닉네임 스냅샷 최신화.
 - 전송 패턴: Transactional Outbox
 
 ## 로컬 실행
