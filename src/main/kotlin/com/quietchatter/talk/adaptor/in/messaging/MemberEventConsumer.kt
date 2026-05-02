@@ -34,6 +34,20 @@ class MemberEventConsumer(
                     log.error("Failed to process MemberDeactivatedEvent", e)
                     throw e
                 }
+            } else if (eventType == "MemberProfileUpdatedEvent") {
+                try {
+                    val memberIdStr = eventDto.memberId
+                    val nickname = eventDto.nickname
+
+                    if (memberIdStr != null && nickname != null) {
+                        val memberId = UUID.fromString(memberIdStr)
+                        log.info("Processing MemberProfileUpdatedEvent for memberId: {}, newNickname: {}", memberId, nickname)
+                        talkCommandable.updateAuthorNickname(memberId, nickname)
+                    }
+                } catch (e: Exception) {
+                    log.error("Failed to process MemberProfileUpdatedEvent", e)
+                    throw e
+                }
             }
         }
     }
