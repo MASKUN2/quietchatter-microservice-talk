@@ -89,18 +89,10 @@ class TalkControllerDocTest {
                                 fieldWithPath("content[].didISupport").description("Did I Support"),
                                 fieldWithPath("content[].createdAt").description("Created At"),
                                 fieldWithPath("content[].isModified").description("Is Modified"),
-                                fieldWithPath("pageable").description("Pageable info"),
-                                fieldWithPath("last").description("Is last page"),
-                                fieldWithPath("totalPages").description("Total pages"),
-                                fieldWithPath("totalElements").description("Total elements"),
-                                fieldWithPath("size").description("Page size"),
-                                fieldWithPath("number").description("Current page number"),
-                                fieldWithPath("sort.empty").description("Sort empty"),
-                                fieldWithPath("sort.sorted").description("Sort sorted"),
-                                fieldWithPath("sort.unsorted").description("Sort unsorted"),
-                                fieldWithPath("first").description("Is first page"),
-                                fieldWithPath("numberOfElements").description("Number of elements in current page"),
-                                fieldWithPath("empty").description("Is empty")
+                                fieldWithPath("page.size").description("Page size"),
+                                fieldWithPath("page.number").description("Current page number"),
+                                fieldWithPath("page.totalElements").description("Total elements"),
+                                fieldWithPath("page.totalPages").description("Total pages")
                             )
                             .responseSchema(Schema.schema("TalkPageResponse"))
                             .build()
@@ -184,18 +176,10 @@ class TalkControllerDocTest {
                                 fieldWithPath("content[].didISupport").description("Did I Support"),
                                 fieldWithPath("content[].createdAt").description("Created At"),
                                 fieldWithPath("content[].isModified").description("Is Modified"),
-                                fieldWithPath("pageable").description("Pageable info"),
-                                fieldWithPath("last").description("Is last page"),
-                                fieldWithPath("totalPages").description("Total pages"),
-                                fieldWithPath("totalElements").description("Total elements"),
-                                fieldWithPath("size").description("Page size"),
-                                fieldWithPath("number").description("Current page number"),
-                                fieldWithPath("sort.empty").description("Sort empty"),
-                                fieldWithPath("sort.sorted").description("Sort sorted"),
-                                fieldWithPath("sort.unsorted").description("Sort unsorted"),
-                                fieldWithPath("first").description("Is first page"),
-                                fieldWithPath("numberOfElements").description("Number of elements in current page"),
-                                fieldWithPath("empty").description("Is empty")
+                                fieldWithPath("page.size").description("Page size"),
+                                fieldWithPath("page.number").description("Current page number"),
+                                fieldWithPath("page.totalElements").description("Total elements"),
+                                fieldWithPath("page.totalPages").description("Total pages")
                             )
                             .responseSchema(Schema.schema("TalkPageResponse"))
                             .build()
