@@ -11,6 +11,7 @@
 - 레거시의 talk/, reaction/ 패키지를 참고하여 idiomatic Kotlin으로 재작성하십시오.
 - ReactionBatchWorker, TalkAutoHiddenProcessor 등 성능 최적화/자동화 로직은 k8s 환경에 맞게 이식하십시오.
 - 새로운 코드 작성 또는 수정 시 단위 테스트를 함께 작성하고 통과를 확인하십시오.
+- 파일 치환(replace) 시 퍼지 매칭(Fuzzy Match)으로 인한 의도치 않은 코드 삭제를 막기 위해, 항상 파일 원본을 먼저 읽고 정확한 대상 문자열을 지정하십시오.
 
 ### B. 회원 인증 처리
 
