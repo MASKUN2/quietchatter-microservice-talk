@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class MemberEventDto(
-    @JsonProperty("evt_type") val evtType: String,
-    @JsonProperty("memberId") val memberId: String? = null,
-    @JsonProperty("nickname") val nickname: String? = null
+    @JsonProperty("type") val type: String,
+    @JsonProperty("subject") val subject: String? = null,
+    @JsonProperty("data") val data: Map<String, Any?>? = null
 )

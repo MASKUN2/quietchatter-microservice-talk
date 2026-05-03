@@ -42,11 +42,12 @@ class OutboxRelayService(
             runCatching {
                 val payloadMap = objectMapper.readValue(event.payload, mapTypeReference)
                 val integrationEvent = TalkIntegrationEvent(
-                    evtId = event.id.toString(),
-                    evtAggId = event.aggregateId,
-                    evtType = event.type,
-                    evtTime = event.createdAt.toString(),
-                    payload = payloadMap
+                    id = event.id.toString(),
+                    source = "/talk",
+                    type = "com.quietchatter.talk.${event.type}",
+                    time = event.createdAt.toString(),
+                    subject = event.aggregateId,
+                    data = payloadMap
                 )
 
                 val message = MessageBuilder.withPayload(integrationEvent)

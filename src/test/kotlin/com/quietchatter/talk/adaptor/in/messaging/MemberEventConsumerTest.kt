@@ -17,36 +17,42 @@ class MemberEventConsumerTest {
 
     @Test
     fun `should call hideAllByMember when MemberDeactivatedEvent is received`() {
-        // Given
         val memberId = UUID.randomUUID()
         val json = """
             {
-                "evt_type": "MemberDeactivatedEvent",
-                "memberId": "$memberId"
+                "specversion": "1.0",
+                "id": "event-id",
+                "source": "/member",
+                "type": "com.quietchatter.member.MemberDeactivatedEvent",
+                "time": "2026-05-03T00:00:00",
+                "subject": "$memberId",
+                "datacontenttype": "application/json",
+                "data": { "memberId": "$memberId" }
             }
         """.trimIndent()
 
-        // When
         memberEventConsumer.memberEvents().accept(json)
 
-        // Then
         verify(talkCommandable).hideAllByMember(memberId)
     }
 
     @Test
     fun `should ignore other event types`() {
-        // Given
         val json = """
             {
-                "evt_type": "OtherEvent",
-                "memberId": "${UUID.randomUUID()}"
+                "specversion": "1.0",
+                "id": "event-id",
+                "source": "/member",
+                "type": "com.quietchatter.member.OtherEvent",
+                "time": "2026-05-03T00:00:00",
+                "subject": "${UUID.randomUUID()}",
+                "datacontenttype": "application/json",
+                "data": {}
             }
         """.trimIndent()
 
-        // When
         memberEventConsumer.memberEvents().accept(json)
 
-        // Then
         verifyNoInteractions(talkCommandable)
     }
 }

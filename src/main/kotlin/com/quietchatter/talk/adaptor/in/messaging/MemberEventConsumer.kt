@@ -23,20 +23,21 @@ class MemberEventConsumer(
 
             runCatching {
                 val eventDto: MemberEventDto = objectMapper.readValue(payload)
-                val eventType = eventDto.evtType
+                val eventType = eventDto.type
                 log.info("Processing event type: {}", eventType)
 
                 when (eventType) {
-                    "MemberDeactivatedEvent" -> {
-                        eventDto.memberId?.let { 
+                    "com.quietchatter.member.MemberDeactivatedEvent" -> {
+                        val memberIdStr = eventDto.data?.get("memberId") as? String
+                        memberIdStr?.let {
                             val memberId = UUID.fromString(it)
                             log.info("Processing MemberDeactivatedEvent for memberId: {}", memberId)
                             talkCommandable.hideAllByMember(memberId)
                         } ?: log.warn("MemberDeactivatedEvent received but memberId is null")
                     }
-                    "MemberProfileUpdatedEvent" -> {
-                        val memberIdStr = eventDto.memberId
-                        val nickname = eventDto.nickname
+                    "com.quietchatter.member.MemberProfileUpdatedEvent" -> {
+                        val memberIdStr = eventDto.data?.get("memberId") as? String
+                        val nickname = eventDto.data?.get("nickname") as? String
                         if (memberIdStr != null && nickname != null) {
                             val memberId = UUID.fromString(memberIdStr)
                             log.info("Processing MemberProfileUpdatedEvent for memberId: {}, newNickname: {}", memberId, nickname)
