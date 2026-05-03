@@ -1,5 +1,6 @@
 package com.quietchatter.talk.application
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.quietchatter.talk.application.`in`.*
 import com.quietchatter.talk.application.out.*
 import com.quietchatter.talk.domain.ReactionType
@@ -17,7 +18,8 @@ class TalkService(
     private val talkLoadable: TalkLoadable,
     private val reactionLoadable: ReactionLoadable,
     private val outboxEventPersistable: OutboxEventPersistable,
-    private val memberLoadable: MemberLoadable
+    private val memberLoadable: MemberLoadable,
+    private val objectMapper: ObjectMapper
 ) : TalkCommandable, TalkQueryable {
 
     @Transactional
@@ -68,7 +70,7 @@ class TalkService(
                 aggregateType = "Talk",
                 aggregateId = talk.id.toString(),
                 type = "TalkHiddenEvent",
-                payload = "{\"talkId\": \"${talk.id}\", \"reason\": \"AUTO_HIDDEN\"}"
+                payload = objectMapper.writeValueAsString(mapOf("talkId" to talk.id, "reason" to "AUTO_HIDDEN"))
             )
             outboxEventPersistable.save(outboxEvent)
         }

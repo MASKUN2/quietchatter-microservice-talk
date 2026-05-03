@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.data.domain.PageRequest
 import org.springframework.kafka.support.KafkaHeaders
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import org.springframework.messaging.support.MessageBuilder
 import org.springframework.scheduling.annotation.Scheduled
@@ -24,6 +25,10 @@ class OutboxPersistenceAdapter(
     override fun findUnprocessed(limit: Int): List<OutboxEvent> {
         return outboxEventRepository.findByProcessedAtIsNullOrderByCreatedAtAsc(PageRequest.of(0, limit))
     }
+
+    override fun deleteProcessedBefore(cutoff: LocalDateTime): Long {
+        return outboxEventRepository.deleteByProcessedAtIsNotNullAndProcessedAtBefore(cutoff)
+    }
 }
 
 @Service
@@ -34,6 +39,14 @@ class OutboxRelayService(
 ) {
     private val log = LoggerFactory.getLogger(OutboxRelayService::class.java)
     private val mapTypeReference = object : TypeReference<Map<String, Any?>>() {}
+
+    @Scheduled(cron = "\${outbox.cleanup.cron:0 0 * * * *}")
+    @Transactional
+    fun cleanupProcessedEvents() {
+        val cutoff = LocalDateTime.now().minusDays(7)
+        val deleted = outboxEventPersistable.deleteProcessedBefore(cutoff)
+        if (deleted > 0) log.info("Deleted $deleted processed outbox events older than 7 days")
+    }
 
     @Scheduled(fixedDelayString = "\${outbox.relay.fixed-delay:1000}")
     @Transactional

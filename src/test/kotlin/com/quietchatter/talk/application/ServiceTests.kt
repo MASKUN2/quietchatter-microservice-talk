@@ -1,5 +1,6 @@
 package com.quietchatter.talk.application
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.quietchatter.talk.application.`in`.AddReactionCommand
 import com.quietchatter.talk.application.`in`.CreateTalkCommand
 import com.quietchatter.talk.application.out.ReactionLoadable
@@ -21,7 +22,8 @@ class TalkServiceTest {
     private val reactionLoadable: ReactionLoadable = mock()
     private val outboxEventPersistable: com.quietchatter.talk.application.`out`.OutboxEventPersistable = mock()
     private val memberLoadable: com.quietchatter.talk.application.`out`.MemberLoadable = mock()
-    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventPersistable, memberLoadable)
+    private val objectMapper = ObjectMapper()
+    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventPersistable, memberLoadable, objectMapper)
 
     @Test
     @DisplayName("만료된 북톡을 자동으로 숨김 처리하고 이벤트를 생성해야 한다")
