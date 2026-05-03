@@ -194,7 +194,8 @@ class TalkControllerDocTest {
         val request = """
             {
                 "bookId": "${UUID.randomUUID()}",
-                "content": "new talk content"
+                "content": "new talk content",
+                "dateToHidden": "2027-05-01"
             }
         """.trimIndent()
 
@@ -216,7 +217,122 @@ class TalkControllerDocTest {
                             .description("Create a new talk")
                             .requestFields(
                                 fieldWithPath("bookId").description("Book ID"),
-                                fieldWithPath("content").description("Talk content")
+                                fieldWithPath("content").description("Talk content"),
+                                fieldWithPath("dateToHidden").description("Date when talk becomes hidden (optional, defaults to 1 year)").optional()
+                            )
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun deleteTalk() {
+        val talkId = UUID.randomUUID()
+
+        mockMvc.perform(
+            delete("/api/talks/{talkId}", talkId)
+                .header("X-Member-Id", UUID.randomUUID().toString())
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                document(
+                    "delete-talk",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Talks")
+                            .description("Delete (soft-delete) an existing talk")
+                            .pathParameters(
+                                parameterWithName("talkId").description("Talk ID")
+                            )
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun getRecommendedTalks() {
+        val talkDetail = TalkDetail(
+            id = UUID.randomUUID(),
+            bookId = UUID.randomUUID(),
+            memberId = UUID.randomUUID(),
+            nickname = "tester",
+            content = "test content",
+            likeCount = 10,
+            supportCount = 5,
+            didILike = false,
+            didISupport = false,
+            createdAt = LocalDateTime.now(),
+            isModified = false
+        )
+
+        whenever(talkQueryable.getRecommendedTalks(any(), any())).thenReturn(listOf(talkDetail))
+
+        mockMvc.perform(
+            get("/api/talks/recommended")
+                .header("X-Member-Id", UUID.randomUUID().toString())
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andDo(
+                document(
+                    "get-recommended-talks",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Talks")
+                            .description("Get recommended talks")
+                            .queryParameters(
+                                parameterWithName("size").description("Number of talks to return (default: 5)").optional()
+                            )
+                            .responseFields(
+                                fieldWithPath("[].id").description("Talk ID"),
+                                fieldWithPath("[].bookId").description("Book ID"),
+                                fieldWithPath("[].memberId").description("Member ID"),
+                                fieldWithPath("[].nickname").description("Nickname"),
+                                fieldWithPath("[].content").description("Content"),
+                                fieldWithPath("[].likeCount").description("Like Count"),
+                                fieldWithPath("[].supportCount").description("Support Count"),
+                                fieldWithPath("[].didILike").description("Did I Like"),
+                                fieldWithPath("[].didISupport").description("Did I Support"),
+                                fieldWithPath("[].createdAt").description("Created At"),
+                                fieldWithPath("[].isModified").description("Is Modified")
+                            )
+                            .responseSchema(Schema.schema("TalkListResponse"))
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun removeReaction() {
+        val talkId = UUID.randomUUID()
+        val request = """
+            {
+                "type": "LIKE"
+            }
+        """.trimIndent()
+
+        mockMvc.perform(
+            delete("/api/reactions/talks/{talkId}", talkId)
+                .header("X-Member-Id", UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                document(
+                    "remove-reaction",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Reactions")
+                            .description("Remove a reaction from a talk")
+                            .pathParameters(
+                                parameterWithName("talkId").description("Talk ID")
+                            )
+                            .requestFields(
+                                fieldWithPath("type").description("Reaction type (LIKE, SUPPORT)")
                             )
                             .build()
                     )
