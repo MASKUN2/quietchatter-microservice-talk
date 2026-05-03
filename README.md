@@ -34,7 +34,7 @@ com.quietchatter.talk/
 |---|---|---|---|
 | GET    | /api/talks?memberId= | Required | 특정 회원이 작성한 북톡 목록 (X-Member-Id 헤더와 memberId가 일치해야 함) |
 | GET    | /api/talks/book/{bookId} | Optional | 특정 책의 북톡 목록 |
-| GET    | /api/talks/recommended | Optional | 추천 북톡 목록 (반응 많은 순) |
+| GET    | /api/talks/recommended | Optional | 추천 북톡 목록 (랜덤) |
 | POST   | /api/talks | Required | 북톡 작성 |
 | PUT    | /api/talks/{talkId} | Required | 북톡 수정 (작성자만) |
 | DELETE | /api/talks/{talkId} | Required | 북톡 숨김 처리 (작성자만) |
