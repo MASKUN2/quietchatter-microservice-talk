@@ -1,5 +1,6 @@
 package com.quietchatter.talk.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Index
@@ -92,6 +93,7 @@ class Talk(
         if (this.supportCount > 0) this.supportCount--
     }
 
+    @JsonIgnore
     fun isModified(): Boolean {
         if (createdAt == null || lastModifiedAt == null) return false
         return java.time.temporal.ChronoUnit.SECONDS.between(createdAt, lastModifiedAt) > 0
