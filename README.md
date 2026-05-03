@@ -20,10 +20,10 @@ com.quietchatter.talk/
   domain/          Talk.kt, Reaction.kt, ReactionType.kt
   application/
     in/            TalkCommandable.kt, TalkQueryable.kt, ReactionModifiable.kt
-    out/           TalkRepository.kt, ReactionRepository.kt
+    out/           TalkPersistable.kt, TalkLoadable.kt, ReactionPersistable.kt, ReactionLoadable.kt, MemberLoadable.kt, OutboxEventPersistable.kt
   adaptor/
     in/web/        TalkController.kt, ReactionController.kt, SpecController.kt
-    out/           TalkJpaRepository.kt, ReactionJpaRepository.kt
+    out/           TalkJpaRepository.kt, ReactionJpaRepository.kt, external/MemberAdapter.kt, outbox/OutboxPersistenceAdapter.kt
 ```
 
 ## API 명세
@@ -73,7 +73,8 @@ Reaction: id(UUID), talkId, memberId, type(ReactionType)
 ## 비즈니스 규칙
 
 - 북톡 삭제는 물리 삭제가 아닌 hidden=true 처리
-- dateToHidden 기본값은 작성/수정 시점으로부터 12개월 후로 설정되며, 해당 날짜 이후 조회에서 자동 제외
+- dateToHidden 기본값은 작성/수정 시점으로부터 12개월 후로 설정됨
+- 모든 목록 조회 시 hidden=true인 북톡은 자동으로 제외
 - 수정/삭제는 작성자 본인만 가능 (불일치 시 403)
 
 ## 서비스 간 통신
