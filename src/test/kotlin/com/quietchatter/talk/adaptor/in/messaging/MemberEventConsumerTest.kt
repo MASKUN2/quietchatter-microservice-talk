@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -54,5 +55,12 @@ class MemberEventConsumerTest {
         memberEventConsumer.memberEvents().accept(json)
 
         verifyNoInteractions(talkCommandable)
+    }
+
+    @Test
+    fun `should throw exception on malformed payload so retry and DLQ can trigger`() {
+        assertThrows<Exception> {
+            memberEventConsumer.memberEvents().accept("not-valid-json")
+        }
     }
 }
