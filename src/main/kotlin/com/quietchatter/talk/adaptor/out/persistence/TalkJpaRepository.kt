@@ -10,7 +10,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 interface TalkJpaRepository : JpaRepository<Talk, UUID> {
+    @Query("SELECT t FROM Talk t WHERE t.bookId = :bookId AND t.isHidden = false")
     fun findByBookId(bookId: UUID, pageable: Pageable): Page<Talk>
+
+    @Query("SELECT t FROM Talk t WHERE t.memberId = :memberId AND t.isHidden = false")
     fun findByMemberId(memberId: UUID, pageable: Pageable): Page<Talk>
 
     @Query("SELECT t FROM Talk t WHERE t.isHidden = false ORDER BY (t.likeCount + t.supportCount) DESC, t.createdAt DESC")

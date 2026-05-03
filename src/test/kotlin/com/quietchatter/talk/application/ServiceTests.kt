@@ -19,9 +19,29 @@ class TalkServiceTest {
     private val talkPersistable: TalkPersistable = mock()
     private val talkLoadable: TalkLoadable = mock()
     private val reactionLoadable: ReactionLoadable = mock()
-    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository = mock()
-    private val memberClient: com.quietchatter.talk.adaptor.out.external.MemberClient = mock()
-    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventRepository, memberClient)
+    private val outboxEventPersistable: com.quietchatter.talk.application.`out`.OutboxEventPersistable = mock()
+    private val memberLoadable: com.quietchatter.talk.application.`out`.MemberLoadable = mock()
+    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventPersistable, memberLoadable)
+
+    @Test
+    @DisplayName("만료된 북톡을 자동으로 숨김 처리하고 이벤트를 생성해야 한다")
+    fun hideExpiredTalks() {
+        // Given
+        val talkId = UUID.randomUUID()
+        val talk = Talk(UUID.randomUUID(), UUID.randomUUID(), "tester", "content")
+        ReflectionHelper.setId(talk, talkId)
+        
+        whenever(talkPersistable.findExpiredTalks(any())).thenReturn(listOf(talk))
+
+        // When
+        val count = talkService.hideExpiredTalks()
+
+        // Then
+        assertEquals(1, count)
+        assert(talk.isHidden)
+        verify(talkPersistable).save(talk)
+        verify(outboxEventPersistable).save(any())
+    }
 
     @Test
     @DisplayName("새로운 북톡을 성공적으로 생성해야 한다")
@@ -35,9 +55,7 @@ class TalkServiceTest {
         )
         val talkId = UUID.randomUUID()
         
-        whenever(memberClient.getMemberInfo(eq(memberId))).thenReturn(
-            com.quietchatter.talk.adaptor.out.external.InternalMemberResponse(memberId, "tester")
-        )
+        whenever(memberLoadable.getMemberNickname(eq(memberId))).thenReturn("tester")
         
         whenever(talkPersistable.save(any())).thenAnswer { invocation ->
             val talk = invocation.getArgument<Talk>(0)

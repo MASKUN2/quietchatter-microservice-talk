@@ -4,6 +4,7 @@ import feign.RequestInterceptor
 import feign.RequestTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.openfeign.FeignClient
+import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import java.util.UUID
@@ -13,6 +14,15 @@ class MemberClientConfig(
 ) : RequestInterceptor {
     override fun apply(template: RequestTemplate) {
         template.header("X-Internal-Secret", internalSecret)
+    }
+}
+
+@Component
+class MemberAdapter(
+    private val memberClient: MemberClient
+) : com.quietchatter.talk.application.`out`.MemberLoadable {
+    override fun getMemberNickname(memberId: UUID): String {
+        return memberClient.getMemberInfo(memberId).nickname
     }
 }
 

@@ -1,9 +1,7 @@
 package com.quietchatter.talk.application
 
 import com.quietchatter.talk.application.`in`.*
-import com.quietchatter.talk.application.out.ReactionLoadable
-import com.quietchatter.talk.application.out.TalkLoadable
-import com.quietchatter.talk.application.out.TalkPersistable
+import com.quietchatter.talk.application.out.*
 import com.quietchatter.talk.domain.ReactionType
 import com.quietchatter.talk.domain.Talk
 import org.springframework.data.domain.Page
@@ -18,18 +16,18 @@ class TalkService(
     private val talkPersistable: TalkPersistable,
     private val talkLoadable: TalkLoadable,
     private val reactionLoadable: ReactionLoadable,
-    private val outboxEventRepository: com.quietchatter.talk.adaptor.out.outbox.OutboxEventRepository,
-    private val memberClient: com.quietchatter.talk.adaptor.out.external.MemberClient
+    private val outboxEventPersistable: OutboxEventPersistable,
+    private val memberLoadable: MemberLoadable
 ) : TalkCommandable, TalkQueryable {
 
     @Transactional
     override fun createTalk(command: CreateTalkCommand): UUID {
-        val memberInfo = memberClient.getMemberInfo(command.memberId)
+        val nickname = memberLoadable.getMemberNickname(command.memberId)
         
         val talk = Talk(
             bookId = command.bookId,
             memberId = command.memberId,
-            nickname = memberInfo.nickname,
+            nickname = nickname,
             content = command.content,
             dateToHidden = command.dateToHidden
         )
@@ -38,7 +36,7 @@ class TalkService(
 
     @Transactional
     override fun updateTalk(command: UpdateTalkCommand) {
-        val talk = talkLoadable.findById(command.talkId) ?: throw IllegalArgumentException("Talk not found")
+        val talk = getTalkOrThrow(command.talkId)
         require(talk.memberId == command.memberId) { "Only the author can update the talk" }
         talk.updateContent(command.content)
         talkPersistable.save(talk)
@@ -46,7 +44,7 @@ class TalkService(
 
     @Transactional
     override fun deleteTalk(command: DeleteTalkCommand) {
-        val talk = talkLoadable.findById(command.talkId) ?: throw IllegalArgumentException("Talk not found")
+        val talk = getTalkOrThrow(command.talkId)
         require(talk.memberId == command.memberId) { "Only the author can delete the talk" }
         talk.hide()
         talkPersistable.save(talk)
@@ -72,7 +70,7 @@ class TalkService(
                 type = "TalkHiddenEvent",
                 payload = "{\"talkId\": \"${talk.id}\", \"reason\": \"AUTO_HIDDEN\"}"
             )
-            outboxEventRepository.save(outboxEvent)
+            outboxEventPersistable.save(outboxEvent)
         }
         
         return expiredTalks.size
@@ -84,68 +82,45 @@ class TalkService(
     }
 
     override fun getTalksByBook(bookId: UUID, memberId: UUID?, pageable: Pageable): Page<TalkDetail> {
-        val talks = talkLoadable.findByBookId(bookId, pageable)
-        return talks.map { talk ->
-            val reactedTypes = memberId?.let { 
-                reactionLoadable.findMemberReactedTypes(talk.id!!, it)
-            } ?: emptySet()
-
-            TalkDetail(
-                id = talk.id!!,
-                bookId = talk.bookId,
-                memberId = talk.memberId,
-                nickname = talk.nickname,
-                content = talk.content,
-                likeCount = talk.likeCount,
-                supportCount = talk.supportCount,
-                didILike = reactedTypes.contains(ReactionType.LIKE),
-                didISupport = reactedTypes.contains(ReactionType.SUPPORT),
-                createdAt = talk.createdAt!!,
-                isModified = talk.isModified()
-            )
+        return talkLoadable.findByBookId(bookId, pageable).map { talk ->
+            toTalkDetail(talk, memberId)
         }
     }
 
     override fun getRecommendedTalks(size: Int, memberId: UUID?): List<TalkDetail> {
-        val talks = talkLoadable.findRecommended(size)
-        return talks.map { talk ->
-            val reactedTypes = memberId?.let { 
-                reactionLoadable.findMemberReactedTypes(talk.id!!, it)
-            } ?: emptySet()
-
-            TalkDetail(
-                id = talk.id!!,
-                bookId = talk.bookId,
-                memberId = talk.memberId,
-                nickname = talk.nickname,
-                content = talk.content,
-                likeCount = talk.likeCount,
-                supportCount = talk.supportCount,
-                didILike = reactedTypes.contains(ReactionType.LIKE),
-                didISupport = reactedTypes.contains(ReactionType.SUPPORT),
-                createdAt = talk.createdAt!!,
-                isModified = talk.isModified()
-            )
+        return talkLoadable.findRecommended(size).map { talk ->
+            toTalkDetail(talk, memberId)
         }
     }
 
     override fun getTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail> {
-        val talks = talkLoadable.findByMemberId(memberId, pageable)
-        return talks.map { talk ->
-            val reactedTypes = reactionLoadable.findMemberReactedTypes(talk.id!!, memberId)
+        return talkLoadable.findByMemberId(memberId, pageable).map { talk ->
+            toTalkDetail(talk, memberId)
+        }
+    }
 
+    private fun getTalkOrThrow(talkId: UUID): Talk {
+        return talkLoadable.findById(talkId) ?: throw IllegalArgumentException("Talk not found: $talkId")
+    }
+
+    private fun toTalkDetail(talk: Talk, memberId: UUID?): TalkDetail {
+        val reactedTypes = memberId?.let { 
+            reactionLoadable.findMemberReactedTypes(talk.id!!, it)
+        } ?: emptySet()
+
+        return with(talk) {
             TalkDetail(
-                id = talk.id!!,
-                bookId = talk.bookId,
+                id = id!!,
+                bookId = bookId,
                 memberId = talk.memberId,
-                nickname = talk.nickname,
-                content = talk.content,
-                likeCount = talk.likeCount,
-                supportCount = talk.supportCount,
+                nickname = nickname,
+                content = content,
+                likeCount = likeCount,
+                supportCount = supportCount,
                 didILike = reactedTypes.contains(ReactionType.LIKE),
                 didISupport = reactedTypes.contains(ReactionType.SUPPORT),
-                createdAt = talk.createdAt!!,
-                isModified = talk.isModified()
+                createdAt = createdAt!!,
+                isModified = isModified()
             )
         }
     }
