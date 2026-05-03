@@ -3,6 +3,7 @@ package com.quietchatter.talk.adaptor.out.persistence
 import com.quietchatter.talk.application.out.TalkLoadable
 import com.quietchatter.talk.application.out.TalkPersistable
 import com.quietchatter.talk.domain.Talk
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -51,6 +52,7 @@ class TalkPersistenceAdapter(
         return talkJpaRepository.findByMemberId(memberId, pageable)
     }
 
+    @Cacheable(cacheNames = ["recommendedTalks"], key = "'default'")
     override fun findRecommended(size: Int): List<Talk> {
         return talkJpaRepository.findRecommended(PageRequest.of(0, size))
     }
