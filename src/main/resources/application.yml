@@ -8,11 +8,8 @@ spring:
   application:
     name: microservice-talk
   cloud:
-    function:
-      autodetect: false
     stream:
       function:
-        autodetect: false
         definition: "memberEvents"
       kafka:
         binder:
