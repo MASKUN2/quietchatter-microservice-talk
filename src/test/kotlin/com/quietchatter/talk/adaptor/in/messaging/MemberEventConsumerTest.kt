@@ -1,5 +1,7 @@
 package com.quietchatter.talk.adaptor.`in`.messaging
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -11,17 +13,20 @@ import java.util.*
 class MemberEventConsumerTest {
 
     private val talkCommandable: TalkCommandable = mock()
-    private val memberEventConsumer = MemberEventConsumer(talkCommandable)
+    private val objectMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
+    private val memberEventConsumer = MemberEventConsumer(talkCommandable, objectMapper)
 
     @Test
     fun `should call hideAllByMember when MemberDeactivatedEvent is received`() {
         // Given
         val memberId = UUID.randomUUID()
-        val eventDto = MemberEventDto(
-            evtType = "MemberDeactivatedEvent",
-            memberId = memberId.toString()
-        )
-        val message = MessageBuilder.withPayload(eventDto).build()
+        val json = """
+            {
+                "evt_type": "MemberDeactivatedEvent",
+                "memberId": "$memberId"
+            }
+        """.trimIndent()
+        val message = MessageBuilder.withPayload(json).build()
 
         // When
         memberEventConsumer.memberEvents().accept(message)
@@ -33,12 +38,13 @@ class MemberEventConsumerTest {
     @Test
     fun `should ignore other event types`() {
         // Given
-        val memberId = UUID.randomUUID()
-        val eventDto = MemberEventDto(
-            evtType = "OtherEvent",
-            memberId = memberId.toString()
-        )
-        val message = MessageBuilder.withPayload(eventDto).build()
+        val json = """
+            {
+                "evt_type": "OtherEvent",
+                "memberId": "${UUID.randomUUID()}"
+            }
+        """.trimIndent()
+        val message = MessageBuilder.withPayload(json).build()
 
         // When
         memberEventConsumer.memberEvents().accept(message)

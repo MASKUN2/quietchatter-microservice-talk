@@ -1,5 +1,7 @@
 package com.quietchatter.talk.adaptor.`in`.messaging
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
@@ -10,44 +12,45 @@ import java.util.function.Consumer
 
 @Configuration
 class MemberEventConsumer(
-    private val talkCommandable: TalkCommandable
+    private val talkCommandable: TalkCommandable,
+    private val objectMapper: ObjectMapper
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Bean
-    fun memberEvents(): Consumer<Message<MemberEventDto>> {
+    fun memberEvents(): Consumer<Message<String>> {
         return Consumer { message ->
-            val eventDto = message.payload
-            val eventType = eventDto.evtType
-            log.debug("Received member event: {}", eventType)
+            val payload = message.payload
+            log.info("Received raw member event message: {}", payload)
 
-            if (eventType == "MemberDeactivatedEvent") {
-                try {
-                    val memberIdStr = eventDto.memberId
-                    
-                    if (memberIdStr != null) {
-                        val memberId = UUID.fromString(memberIdStr)
-                        log.info("Processing MemberDeactivatedEvent for memberId: {}", memberId)
-                        talkCommandable.hideAllByMember(memberId)
-                    }
-                } catch (e: Exception) {
-                    log.error("Failed to process MemberDeactivatedEvent", e)
-                    throw e
-                }
-            } else if (eventType == "MemberProfileUpdatedEvent") {
-                try {
-                    val memberIdStr = eventDto.memberId
-                    val nickname = eventDto.nickname
+            runCatching {
+                val eventDto: MemberEventDto = objectMapper.readValue(payload)
+                val eventType = eventDto.evtType
+                log.info("Processing event type: {}", eventType)
 
-                    if (memberIdStr != null && nickname != null) {
-                        val memberId = UUID.fromString(memberIdStr)
-                        log.info("Processing MemberProfileUpdatedEvent for memberId: {}, newNickname: {}", memberId, nickname)
-                        talkCommandable.updateAuthorNickname(memberId, nickname)
+                when (eventType) {
+                    "MemberDeactivatedEvent" -> {
+                        eventDto.memberId?.let { 
+                            val memberId = UUID.fromString(it)
+                            log.info("Processing MemberDeactivatedEvent for memberId: {}", memberId)
+                            talkCommandable.hideAllByMember(memberId)
+                        } ?: log.warn("MemberDeactivatedEvent received but memberId is null")
                     }
-                } catch (e: Exception) {
-                    log.error("Failed to process MemberProfileUpdatedEvent", e)
-                    throw e
+                    "MemberProfileUpdatedEvent" -> {
+                        val memberIdStr = eventDto.memberId
+                        val nickname = eventDto.nickname
+                        if (memberIdStr != null && nickname != null) {
+                            val memberId = UUID.fromString(memberIdStr)
+                            log.info("Processing MemberProfileUpdatedEvent for memberId: {}, newNickname: {}", memberId, nickname)
+                            talkCommandable.updateAuthorNickname(memberId, nickname)
+                        } else {
+                            log.warn("MemberProfileUpdatedEvent received but memberId or nickname is null")
+                        }
+                    }
+                    else -> log.info("Ignored unknown event type: {}", eventType)
                 }
+            }.onFailure { e ->
+                log.error("Failed to process member event payload: $payload", e)
             }
         }
     }
