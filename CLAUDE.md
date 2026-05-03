@@ -14,8 +14,9 @@
 
 ### B. 회원 인증 처리
 
-- 인증이 필요한 API는 X-Member-Id 헤더를 파라미터로 받아 사용한다.
-- Optional 인증 API는 헤더가 없으면 비로그인 상태로 처리한다 (예: reacted 필드 없음).
+- Gateway 계약: 토큰이 있으면 X-Member-Id 헤더가 전달되고, 없으면 헤더가 아예 전송되지 않는다. 빈 문자열은 오지 않는다.
+- 인증 필수 엔드포인트는 @RequestHeader("X-Member-Id") memberId: UUID 로 선언한다. 헤더 미포함 시 MissingRequestHeaderException이 발생하며 GlobalExceptionHandler가 401로 처리한다.
+- Optional 인증 엔드포인트는 @RequestHeader("X-Member-Id", required = false) memberId: UUID? 로 선언한다. null이면 비로그인 상태로 처리한다 (예: reacted 필드 없음).
 
 ### C. 숨김(soft delete) 처리
 
