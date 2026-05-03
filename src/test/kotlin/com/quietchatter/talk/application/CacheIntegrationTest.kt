@@ -10,6 +10,8 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.kafka.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 
 @SpringBootTest
 @Testcontainers
@@ -19,11 +21,15 @@ class CacheIntegrationTest {
         @Container
         val redisContainer = GenericContainer("redis:7-alpine").withExposedPorts(6379)
 
+        @Container
+        val kafkaContainer = KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0"))
+
         @JvmStatic
         @DynamicPropertySource
-        fun redisProperties(registry: DynamicPropertyRegistry) {
+        fun properties(registry: DynamicPropertyRegistry) {
             registry.add("spring.data.redis.host") { redisContainer.host }
             registry.add("spring.data.redis.port") { redisContainer.firstMappedPort }
+            registry.add("spring.cloud.stream.kafka.binder.brokers") { kafkaContainer.bootstrapServers }
         }
     }
 
