@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.springframework.messaging.support.MessageBuilder
 import java.util.*
 
 class MemberEventConsumerTest {
@@ -26,10 +25,9 @@ class MemberEventConsumerTest {
                 "memberId": "$memberId"
             }
         """.trimIndent()
-        val message = MessageBuilder.withPayload(json).build()
 
         // When
-        memberEventConsumer.memberEvents().accept(message)
+        memberEventConsumer.memberEvents().accept(json)
 
         // Then
         verify(talkCommandable).hideAllByMember(memberId)
@@ -44,10 +42,9 @@ class MemberEventConsumerTest {
                 "memberId": "${UUID.randomUUID()}"
             }
         """.trimIndent()
-        val message = MessageBuilder.withPayload(json).build()
 
         // When
-        memberEventConsumer.memberEvents().accept(message)
+        memberEventConsumer.memberEvents().accept(json)
 
         // Then
         verifyNoInteractions(talkCommandable)

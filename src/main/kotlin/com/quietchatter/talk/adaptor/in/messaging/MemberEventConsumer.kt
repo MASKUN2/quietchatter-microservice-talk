@@ -6,7 +6,6 @@ import com.quietchatter.talk.application.`in`.TalkCommandable
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.messaging.Message
 import java.util.*
 import java.util.function.Consumer
 
@@ -18,9 +17,8 @@ class MemberEventConsumer(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Bean
-    fun memberEvents(): Consumer<Message<String>> {
-        return Consumer { message ->
-            val payload = message.payload
+    fun memberEvents(): Consumer<String> {
+        return Consumer { payload ->
             log.info("Received raw member event message: {}", payload)
 
             runCatching {
