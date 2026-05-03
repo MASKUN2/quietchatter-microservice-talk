@@ -26,8 +26,11 @@
 ### D. 메시징 규칙
 
 - 모든 이벤트 발행은 Transactional Outbox 패턴을 따른다.
-- 이벤트 직렬화: flattened JSON. 메타데이터 필드에는 evt_접두어를 사용하십시오.
-- 타 서비스 이벤트 수신 시 독립 DTO(예: MemberEventDto)를 정의하여 결합도를 낮추십시오.
+- 이벤트 포맷: CloudEvents 1.0. TalkIntegrationEvent 클래스를 사용하며 필드는 specversion, id, source, type, time, subject, datacontenttype, data를 포함한다.
+- type 필드 명명 규칙: com.quietchatter.talk.{EventName} (예: com.quietchatter.talk.TalkHiddenEvent).
+- time 필드: LocalDateTime.atOffset(ZoneOffset.UTC).toString()으로 RFC 3339 형식 직렬화.
+- 타 서비스 이벤트 수신 시 독립 DTO(예: MemberEventDto)를 정의하여 결합도를 낮추십시오. MemberEventDto는 CloudEvents type, subject, data 필드를 매핑한다.
+- Consumer 함수는 Consumer<String>으로 선언하고 함수명을 spring.cloud.stream.function.definition에 등록하십시오. Consumer<Message<T>>는 Spring Cloud Stream 4.x에서 네이티브 핸들러로 간주되어 채널 바인딩이 생성되지 않습니다.
 
 ### E. 서비스 간 통신
 

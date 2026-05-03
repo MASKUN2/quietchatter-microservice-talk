@@ -88,11 +88,22 @@ RFC 7807 (Problem Details for HTTP APIs) 표준을 준수하며, @RestController
 
 ## 이벤트
 
-- 발행: TalkIntegrationEvent (Kafka 토픽: talk)
-- 구독:
-    - MemberDeactivatedEvent: 해당 회원의 모든 북톡 숨김 처리.
-    - MemberProfileUpdatedEvent: 해당 회원의 모든 북톡 닉네임 스냅샷 최신화.
-- 전송 패턴: Transactional Outbox
+이벤트 포맷: CloudEvents 1.0 (specversion, id, source, type, time, subject, datacontenttype, data). 시각 필드는 RFC 3339(UTC) 형식.
+
+발행 이벤트 (Kafka 토픽: talk):
+
+| type 필드 | 트리거 | data 필드 |
+|---|---|---|
+| com.quietchatter.talk.TalkHiddenEvent | 자동 만료 숨김 | talkId, reason(AUTO_HIDDEN) |
+
+구독 이벤트 (컨슈머 그룹: microservice-talk-group, Kafka 토픽: member):
+
+| type 필드 | 처리 내용 |
+|---|---|
+| com.quietchatter.member.MemberDeactivatedEvent | 해당 회원의 모든 북톡 숨김 처리 |
+| com.quietchatter.member.MemberProfileUpdatedEvent | 해당 회원의 모든 북톡 닉네임 스냅샷 최신화 |
+
+전송 패턴: Transactional Outbox. OutboxRelayService가 1초 간격으로 미처리 이벤트를 릴레이하고, 처리 완료된 이벤트는 7일 후 자동 삭제(매시간 정각 cleanup job).
 
 ## 로컬 실행
 
