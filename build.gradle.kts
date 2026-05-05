@@ -75,7 +75,7 @@ tasks.register<Test>("testDocs") {
 }
 
 configure<com.epages.restdocs.apispec.gradle.OpenApi3Extension> {
-    setServer("http://localhost:8083")
+    setServer("http://localhost:8084")
     title = "Talk Service API"
     description = "Talk and Reaction Domain API documentation"
     version = "0.0.1"
