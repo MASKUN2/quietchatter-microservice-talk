@@ -16,6 +16,9 @@ interface TalkJpaRepository : JpaRepository<Talk, UUID> {
     @Query("SELECT t FROM Talk t WHERE t.memberId = :memberId AND t.isHidden = false")
     fun findByMemberId(memberId: UUID, pageable: Pageable): Page<Talk>
 
+    @Query("SELECT t FROM Talk t WHERE t.memberId = :memberId AND t.isHidden = :isHidden")
+    fun findByMemberIdAndIsHidden(memberId: UUID, isHidden: Boolean, pageable: Pageable): Page<Talk>
+
     @Query(value = "SELECT * FROM talk WHERE is_hidden = false ORDER BY RANDOM()", nativeQuery = true)
     fun findRecommended(pageable: Pageable): List<Talk>
 

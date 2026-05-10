@@ -8,7 +8,8 @@ import java.util.UUID
 interface TalkQueryable {
     fun getTalksByBook(bookId: UUID, memberId: UUID?, pageable: Pageable): Page<TalkDetail>
     fun getRecommendedTalks(size: Int, memberId: UUID?): List<TalkDetail>
-    fun getTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail>
+    fun getVisibleTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail>
+    fun getHiddenTalksByMember(memberId: UUID, requesterId: UUID, pageable: Pageable): Page<TalkDetail>
 }
 
 data class TalkDetail(

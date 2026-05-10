@@ -52,6 +52,10 @@ class TalkPersistenceAdapter(
         return talkJpaRepository.findByMemberId(memberId, pageable)
     }
 
+    override fun findByMemberIdAndIsHidden(memberId: UUID, isHidden: Boolean, pageable: Pageable): Page<Talk> {
+        return talkJpaRepository.findByMemberIdAndIsHidden(memberId, isHidden, pageable)
+    }
+
     @Cacheable(cacheNames = ["recommendedTalks"], key = "#size")
     override fun findRecommended(size: Int): List<Talk> {
         return talkJpaRepository.findRecommended(PageRequest.of(0, size))

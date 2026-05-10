@@ -9,6 +9,7 @@ import com.quietchatter.talk.application.out.TalkLoadable
 import com.quietchatter.talk.application.out.TalkPersistable
 import com.quietchatter.talk.domain.ReactionType
 import com.quietchatter.talk.domain.Talk
+import com.quietchatter.talk.domain.TalkOwnershipService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -23,7 +24,8 @@ class TalkServiceTest {
     private val outboxEventPersistable: com.quietchatter.talk.application.`out`.OutboxEventPersistable = mock()
     private val memberLoadable: com.quietchatter.talk.application.`out`.MemberLoadable = mock()
     private val objectMapper = ObjectMapper()
-    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventPersistable, memberLoadable, objectMapper)
+    private val talkOwnershipService = TalkOwnershipService()
+    private val talkService = TalkService(talkPersistable, talkLoadable, reactionLoadable, outboxEventPersistable, memberLoadable, objectMapper, talkOwnershipService)
 
     @Test
     @DisplayName("만료된 북톡을 자동으로 숨김 처리하고 이벤트를 생성해야 한다")

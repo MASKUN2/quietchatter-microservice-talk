@@ -7,6 +7,7 @@ interface TalkCommandable {
     fun createTalk(command: CreateTalkCommand): UUID
     fun updateTalk(command: UpdateTalkCommand)
     fun deleteTalk(command: DeleteTalkCommand)
+    fun restoreTalk(command: RestoreTalkCommand)
     fun hideAllByMember(memberId: UUID)
     fun hideExpiredTalks(): Int
     fun updateAuthorNickname(memberId: UUID, newNickname: String)
@@ -27,6 +28,11 @@ data class UpdateTalkCommand(
 )
 
 data class DeleteTalkCommand(
+    val talkId: UUID,
+    val memberId: UUID
+)
+
+data class RestoreTalkCommand(
     val talkId: UUID,
     val memberId: UUID
 )

@@ -5,6 +5,7 @@ import com.quietchatter.talk.application.`in`.*
 import com.quietchatter.talk.application.out.*
 import com.quietchatter.talk.domain.ReactionType
 import com.quietchatter.talk.domain.Talk
+import com.quietchatter.talk.domain.TalkOwnershipService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -19,7 +20,8 @@ class TalkService(
     private val reactionLoadable: ReactionLoadable,
     private val outboxEventPersistable: OutboxEventPersistable,
     private val memberLoadable: MemberLoadable,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val talkOwnershipService: TalkOwnershipService
 ) : TalkCommandable, TalkQueryable {
 
     @Transactional
@@ -39,16 +41,22 @@ class TalkService(
     @Transactional
     override fun updateTalk(command: UpdateTalkCommand) {
         val talk = getTalkOrThrow(command.talkId)
-        require(talk.memberId == command.memberId) { "Only the author can update the talk" }
-        talk.updateContent(command.content)
+        talkOwnershipService.updateContentByOwner(talk, command.memberId, command.content)
         talkPersistable.save(talk)
     }
 
     @Transactional
     override fun deleteTalk(command: DeleteTalkCommand) {
         val talk = getTalkOrThrow(command.talkId)
-        require(talk.memberId == command.memberId) { "Only the author can delete the talk" }
-        talk.hide()
+        talkOwnershipService.hideByOwner(talk, command.memberId)
+        talkPersistable.save(talk)
+    }
+
+    @Transactional
+    override fun restoreTalk(command: RestoreTalkCommand) {
+        val talk = talkLoadable.findById(command.talkId)
+            ?: throw IllegalArgumentException("Talk not found: ${command.talkId}")
+        talkOwnershipService.restoreByOwner(talk, command.memberId)
         talkPersistable.save(talk)
     }
 
@@ -63,7 +71,7 @@ class TalkService(
         val expiredTalks = talkPersistable.findExpiredTalks(now)
         
         expiredTalks.forEach { talk ->
-            talk.hide()
+            talkOwnershipService.hideBySystem(talk)
             talkPersistable.save(talk)
             
             val outboxEvent = com.quietchatter.talk.adaptor.out.outbox.OutboxEvent(
@@ -95,8 +103,15 @@ class TalkService(
         }
     }
 
-    override fun getTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail> {
-        return talkLoadable.findByMemberId(memberId, pageable).map { talk ->
+    override fun getVisibleTalksByMember(memberId: UUID, pageable: Pageable): Page<TalkDetail> {
+        return talkLoadable.findByMemberIdAndIsHidden(memberId, false, pageable).map { talk ->
+            toTalkDetail(talk, memberId)
+        }
+    }
+
+    override fun getHiddenTalksByMember(memberId: UUID, requesterId: UUID, pageable: Pageable): Page<TalkDetail> {
+        talkOwnershipService.authorizeHiddenAccess(memberId, requesterId)
+        return talkLoadable.findByMemberIdAndIsHidden(memberId, true, pageable).map { talk ->
             toTalkDetail(talk, memberId)
         }
     }

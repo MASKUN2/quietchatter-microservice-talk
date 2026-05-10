@@ -9,5 +9,6 @@ interface TalkLoadable {
     fun findById(id: UUID): Talk?
     fun findByBookId(bookId: UUID, pageable: Pageable): Page<Talk>
     fun findByMemberId(memberId: UUID, pageable: Pageable): Page<Talk>
+    fun findByMemberIdAndIsHidden(memberId: UUID, isHidden: Boolean, pageable: Pageable): Page<Talk>
     fun findRecommended(size: Int): List<Talk>
 }

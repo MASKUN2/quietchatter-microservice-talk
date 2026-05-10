@@ -5,6 +5,7 @@ import com.epages.restdocs.apispec.ResourceSnippetParameters
 import com.epages.restdocs.apispec.Schema
 import com.quietchatter.talk.application.`in`.*
 import com.quietchatter.talk.domain.ReactionType
+import com.quietchatter.talk.domain.ForbiddenException
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -58,7 +59,7 @@ class TalkControllerDocTest {
             isModified = false
         )
 
-        whenever(talkQueryable.getTalksByMember(any(), any())).thenReturn(PageImpl(listOf(talkDetail)))
+        whenever(talkQueryable.getVisibleTalksByMember(any(), any())).thenReturn(PageImpl(listOf(talkDetail)))
 
         mockMvc.perform(
             get("/api/talks")
@@ -75,7 +76,8 @@ class TalkControllerDocTest {
                             .tag("Talks")
                             .description("Get talks by member ID")
                             .queryParameters(
-                                parameterWithName("memberId").description("The unique identifier of the member")
+                                parameterWithName("memberId").description("The unique identifier of the member"),
+                                parameterWithName("hidden").description("Whether to fetch hidden talks (default: false, only owner can access when true)").optional()
                             )
                             .responseFields(
                                 fieldWithPath("content[].id").description("Talk ID"),
@@ -106,9 +108,13 @@ class TalkControllerDocTest {
         val memberId = UUID.randomUUID()
         val otherMemberId = UUID.randomUUID()
 
+        whenever(talkQueryable.getHiddenTalksByMember(any(), any(), any()))
+            .thenThrow(ForbiddenException("접근 권한이 없습니다."))
+
         mockMvc.perform(
             get("/api/talks")
                 .param("memberId", memberId.toString())
+                .param("hidden", "true")
                 .header("X-Member-Id", otherMemberId.toString())
                 .accept(MediaType.APPLICATION_JSON)
         )
@@ -119,9 +125,35 @@ class TalkControllerDocTest {
                     resource(
                         ResourceSnippetParameters.builder()
                             .tag("Talks")
-                            .description("Get talks by member ID - Forbidden when memberId does not match X-Member-Id header")
+                            .description("Get hidden talks - Forbidden when X-Member-Id does not match memberId")
                             .queryParameters(
-                                parameterWithName("memberId").description("The unique identifier of the member")
+                                parameterWithName("memberId").description("The unique identifier of the member"),
+                                parameterWithName("hidden").description("Must be true to trigger ownership check")
+                            )
+                            .build()
+                    )
+                )
+            )
+    }
+
+    @Test
+    fun restoreTalk() {
+        val talkId = UUID.randomUUID()
+
+        mockMvc.perform(
+            post("/api/talks/{talkId}/restore", talkId)
+                .header("X-Member-Id", UUID.randomUUID().toString())
+        )
+            .andExpect(status().isNoContent)
+            .andDo(
+                document(
+                    "restore-talk",
+                    resource(
+                        ResourceSnippetParameters.builder()
+                            .tag("Talks")
+                            .description("Restore a hidden talk (sets isHidden=false, resets dateToHidden to 1 year from now)")
+                            .pathParameters(
+                                parameterWithName("talkId").description("Talk ID")
                             )
                             .build()
                     )

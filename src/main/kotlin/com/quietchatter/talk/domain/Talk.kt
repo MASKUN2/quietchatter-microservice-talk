@@ -69,6 +69,11 @@ class Talk(
         this.isHidden = true
     }
 
+    fun restore() {
+        this.isHidden = false
+        this.dateToHidden = LocalDate.now().plusMonths(12)
+    }
+
     /**
      * 특정 날짜 기준으로 숨김 처리되어야 하는지 확인합니다.
      */

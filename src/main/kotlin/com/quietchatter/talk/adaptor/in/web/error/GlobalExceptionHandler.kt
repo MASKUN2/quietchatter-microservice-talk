@@ -1,5 +1,6 @@
 package com.quietchatter.talk.adaptor.`in`.web.error
 
+import com.quietchatter.talk.domain.ForbiddenException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -11,6 +12,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    @ExceptionHandler(ForbiddenException::class)
+    fun handleForbiddenException(ex: ForbiddenException): ProblemDetail {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.message ?: "접근 권한이 없습니다.")
+    }
 
     @ExceptionHandler(MissingRequestHeaderException::class)
     fun handleMissingRequestHeader(ex: MissingRequestHeaderException): ProblemDetail {
